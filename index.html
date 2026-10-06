@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="misto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Análise Semanal de Pagamentos — Portal Financeiro</title>
+<style>
+/* ============================================================
+   Tema misto: cromo (menu lateral + barra) sempre em azul-escuro,
+   área de trabalho em cinza claro. data-tema="escuro" leva a área
+   de trabalho para o mesmo azul profundo.
+   ============================================================ */
+:root{
+  /* cromo — constante nos dois temas */
+  --nav:#0f172a;
+  --nav-2:#1d3a80;
+  --nav-line:rgba(255,255,255,.14);
+  --nav-txt:#f2f6fc;
+  --nav-mut:#c3d3ec;
+  --nav-hover:rgba(255,255,255,.13);
+
+  /* marca */
+  --azul:#2563eb;
+  --azul-brilho:#3b82f6;
+  --azul-claro:#60a5fa;
+  --azul-fraco:#dbeafe;
+  --azul-escuro:#1e3a8a;
+  --grad-escuro:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+
+  /* área de trabalho — claro */
+  --bg:#f1f4f9;
+  --surf:#ffffff;
+  --surf-vidro:rgba(255,255,255,.9);
+  --surf-2:#f5f8fc;
+  --surf-3:#e8edf4;
+  --line:#e2e8f0;
+  --line-forte:#cbd5e1;
+  --txt:#0f172a;
+  --txt-2:#475569;
+  --txt-3:#7889a1;
+
+  /* semânticas */
+  --ok-bg:#dcfce7;   --ok-txt:#166534;   --ok-pt:#16a34a;
+  --al-bg:#fee2e2;   --al-txt:#991b1b;   --al-pt:#ef4444;
+  --av-bg:#fef3c7;   --av-txt:#854d0e;
+  --al-linha:rgba(239,68,68,.055);
+
+  /* medidas */
+  --nav-w:248px;
+  --ctl:36px;              /* altura única de todo controle */
+  --pad:24px;
+  --raio:6px;
+  --raio-lg:10px;
+  --linha-tab:52px;
+  --topo:64px;
+  --sombra:0 1px 2px rgba(13,27,46,.06), 0 1px 3px rgba(13,27,46,.04);
+  --sombra-alta:0 10px 30px rgba(13,27,46,.16);
+  --fonte:"Inter","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+html[data-tema="escuro"]{
+  --bg:#080f1c;
+  --surf:#101d33;
+  --surf-vidro:rgba(16,29,51,.88);
+  --surf-2:#16253d;
+  --surf-3:#1d3050;
+  --line:#243c5c;
+  --line-forte:#32496c;
+  --txt:#e9eef6;
+  --txt-2:#a3b3c9;
+  --txt-3:#7c8da5;
+  --azul-fraco:#1c3557;
+  --ok-bg:#0f3524;   --ok-txt:#86e2ad;   --ok-pt:#22c55e;
+  --al-bg:#3d1a1a;   --al-txt:#fca5a5;   --al-pt:#f87171;
+  --av-bg:#3a2c0c;   --av-txt:#f0cd7a;
+  --al-linha:rgba(248,113,113,.07);
+  --grad-escuro:linear-gradient(135deg,#0d1830 0%,#1b2c4d 100%);
+  --sombra:0 1px 2px rgba(0,0,0,.35);
+  --sombra-alta:0 14px 34px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:var(--fonte); font-size:14px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.01em}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--azul-claro);outline-offset:2px;border-radius:6px}
+nav.side :focus-visible,header.top :focus-visible{outline-color:#8fb8ff}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";font-weight:500}
+.sr{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.ico{width:18px;height:18px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+.ico-sm{width:15px;height:15px}
+td .ico{vertical-align:-3px}
+
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line-forte);border-radius:99px;border:3px solid transparent;
+  background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--txt-3);background-clip:content-box}
+
+/* ---------------- menu lateral ---------------- */
+nav.side{
+  position:fixed;left:0;top:0;bottom:0;width:var(--nav-w);z-index:30;
+  background:linear-gradient(185deg,var(--nav) 0%,#152a5e 58%,var(--nav-2) 100%);
+  border-right:1px solid var(--nav-line);color:var(--nav-txt);
+  display:flex;flex-direction:column;padding:20px 16px;
+}
+.brand{display:flex;align-items:center;gap:12px;padding:0 4px 22px;margin-bottom:18px;
+  border-bottom:1px solid var(--nav-line)}
+.brand-mark{width:40px;height:40px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;
+  backdrop-filter:blur(4px)}
+.brand h1{font-size:15px;line-height:1.25;color:#fff}
+.brand p{margin:3px 0 0;font-size:11.5px;line-height:1.2;color:var(--nav-mut)}
+.side .grupo{font-size:11px;color:rgba(255,255,255,.62);padding:0 8px 8px;letter-spacing:.06em}
+.side ul{list-style:none;margin:0 0 4px;padding:0;display:flex;flex-direction:column;gap:4px}
+.tab{display:flex;align-items:center;gap:11px;width:100%;height:42px;padding:0 12px;
+  border:0;border-radius:var(--raio);background:transparent;color:var(--nav-mut);
+  cursor:pointer;text-align:left;font-size:13.5px;transition:background-color .16s,color .16s}
+.tab{color:#dbe6f7}
+.tab:hover{background:var(--nav-hover);color:#fff}
+.tab[aria-current="page"]{background:#fff;color:var(--nav);font-weight:700;
+  box-shadow:0 2px 14px rgba(15,23,42,.28)}
+.tab[aria-current="page"] .ico{stroke-width:2}
+.side-foot{margin-top:auto;padding:14px 12px;border-radius:var(--raio-lg);
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(6px)}
+.side-foot b{display:block;font-size:13.5px;color:#fff;font-weight:600}
+.side-foot span{display:block;font-size:11.5px;color:var(--nav-mut);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-foot .estado{display:flex;align-items:center;gap:7px;margin-top:10px;font-size:11.5px;color:var(--nav-mut)}
+.dot{width:7px;height:7px;border-radius:50%;background:#6b7c93;flex:0 0 auto}
+.dot.on{background:#3ecf8e;box-shadow:0 0 0 3px rgba(62,207,142,.18)}
+
+/* ---------------- moldura de conteúdo ---------------- */
+.shell{margin-left:var(--nav-w);min-height:100vh;display:flex;flex-direction:column}
+.chrome{position:sticky;top:0;z-index:20}
+header.top{
+  background:var(--nav);border-bottom:1px solid var(--nav-line);color:var(--nav-txt);
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:0 var(--pad);height:var(--topo);
+}
+.top-title{font-size:15.5px;font-weight:600;color:#fff;white-space:nowrap;line-height:1.2}
+.top-title small{display:block;font-size:11.5px;font-weight:400;color:var(--nav-mut);
+  line-height:1.2;margin-top:3px}
+.top-acoes{display:flex;align-items:center;gap:10px}
+
+.toolbar{
+  background:var(--surf);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px var(--pad);
+  box-shadow:var(--sombra);
+}
+.toolbar .sep{width:1px;height:22px;background:var(--line);margin:0 2px}
+
+/* ---------------- controles ---------------- */
+.field{display:inline-flex;align-items:center;gap:8px;height:var(--ctl);padding:0 10px;
+  background:var(--surf-2);border:1px solid var(--line);border-radius:var(--raio)}
+.field label{font-size:11.5px;color:var(--txt-3);white-space:nowrap}
+.field select,.field input{height:100%;border:0;background:transparent;outline:0;padding:0;
+  font-size:13.5px;font-weight:600;max-width:180px;appearance:none;-webkit-appearance:none;cursor:pointer}
+.field select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237d8899' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right center;background-size:13px;padding-right:17px}
+.field input{font-weight:500;cursor:text;min-width:118px;background-image:none;padding-right:0}
+.field input[type=number]{min-width:0}
+.field input::-webkit-search-cancel-button{cursor:pointer}
+.field:focus-within{border-color:var(--azul);box-shadow:0 0 0 3px var(--azul-fraco)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:var(--ctl);
+  padding:0 14px;border:1px solid var(--line);border-radius:var(--raio);background:var(--surf);
+  color:var(--txt);cursor:pointer;font-size:13.5px;font-weight:600;white-space:nowrap;
+  transition:background-color .16s,border-color .16s,color .16s}
+.btn:hover{background:var(--surf-3);border-color:var(--line-forte)}
+.btn.primary{background:var(--azul);border-color:var(--azul);color:#fff}
+.btn.primary:hover{background:var(--azul-escuro);border-color:var(--azul-escuro)}
+.btn.escuro{background:var(--nav);border-color:var(--nav);color:#fff}
+.btn.escuro:hover{background:#000;border-color:#000}
+.btn.ghost{background:transparent;border-color:var(--nav-line);color:var(--nav-txt)}
+.btn.ghost:hover{background:var(--nav-hover);border-color:var(--nav-hover)}
+.btn.icon{width:var(--ctl);padding:0}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:hover{background:var(--surf);border-color:var(--line)}
+
+.pills{display:inline-flex;align-items:center;gap:2px;height:var(--ctl);padding:3px;
+  background:var(--surf-2);border:1px solid var(--line);border-radius:var(--raio)}
+.pill{display:inline-flex;align-items:center;height:100%;padding:0 12px;border:0;border-radius:7px;
+  background:transparent;color:var(--txt-2);cursor:pointer;font-size:12.5px;font-weight:600;
+  white-space:nowrap;transition:background-color .16s,color .16s}
+.pill:hover{background:var(--surf-3);color:var(--txt)}
+.pill[aria-pressed="true"]{background:var(--azul);color:#fff}
+.count{display:inline-grid;place-items:center;min-width:22px;height:20px;padding:0 6px;border-radius:999px;
+  background:var(--azul-fraco);color:var(--azul-escuro);font-size:11px;font-weight:700}
+html[data-tema="escuro"] .count{color:#cfe0fb}
+
+/* ---------------- páginas ---------------- */
+main{flex:1;padding:var(--pad);max-width:1680px;width:100%}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+  flex-wrap:wrap;margin-bottom:18px}
+.page-head h2{font-size:21px;line-height:1.25}
+.page-head p{margin:5px 0 0;color:var(--txt-2);font-size:13.5px;max-width:78ch}
+.page-acoes{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+.card{background:var(--surf-vidro);backdrop-filter:blur(8px);border:1px solid var(--line);
+  border-radius:var(--raio-lg);box-shadow:var(--sombra);overflow:hidden}
+.card.destaque{border-color:rgba(59,130,246,.38);
+  box-shadow:0 0 0 1px rgba(59,130,246,.14),0 6px 22px rgba(59,130,246,.16)}
+.card + .card{margin-top:18px}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:15px 20px;border-bottom:1px solid var(--line);background:var(--surf-2)}
+.card-head h3{font-size:14.5px}
+.card-head > span{font-size:12.5px;color:var(--txt-2)}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:12px 20px;border-top:1px solid var(--line);background:var(--surf-2);
+  font-size:12.5px;color:var(--txt-2)}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:14px;margin-bottom:18px}
+.kpi{position:relative;background:var(--surf-vidro);backdrop-filter:blur(8px);
+  border:1px solid var(--line);border-radius:var(--raio-lg);padding:16px 18px;
+  box-shadow:var(--sombra);overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--azul)}
+.kpi .orb{position:absolute;right:-22px;top:-22px;width:96px;height:96px;border-radius:50%;
+  background:rgba(255,255,255,.1);filter:blur(14px);pointer-events:none}
+.kpi.hero{background:var(--grad-escuro);border-color:transparent;
+  box-shadow:0 10px 15px -3px rgba(15,23,42,.22),0 4px 6px -2px rgba(15,23,42,.12)}
+.kpi.hero::before{display:none}
+.kpi.hero span,.kpi.hero small{color:#b9cbe8}
+.kpi.hero strong{color:#fff;font-size:27px}
+.kpi.alert{border-color:rgba(239,68,68,.35);
+  box-shadow:0 0 0 1px rgba(239,68,68,.12),0 6px 20px rgba(239,68,68,.14)}
+.kpi.alert::before{background:var(--al-pt)}
+.kpi span{display:block;font-size:11.5px;color:var(--txt-3);line-height:1.3}
+.kpi strong{display:block;margin-top:7px;font-size:24px;line-height:1.15;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;font-weight:700;color:var(--txt)}
+.kpi small{display:block;margin-top:4px;font-size:11.5px;color:var(--txt-3)}
+.kpi.alert::before{background:#d94436}
+.kpi.alert strong{color:var(--al-txt)}
+
+/* ---------------- tabelas ---------------- */
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:separate;border-spacing:0;text-align:left}
+th{padding:11px 14px;font-size:11.5px;font-weight:600;color:var(--txt-3);white-space:nowrap;
+  background:var(--surf-2);border-bottom:1px solid var(--line);vertical-align:middle}
+td{padding:9px 14px;height:var(--linha-tab);border-bottom:1px solid var(--line);vertical-align:middle;
+  font-size:13.5px}
+th:first-child,td:first-child{padding-left:20px}
+th:last-child,td:last-child{padding-right:20px}
+tbody tr:last-child td{border-bottom:0}
+tbody tr{transition:background-color .12s}
+tbody tr:hover{background:var(--surf-2)}
+.r{text-align:right}
+.c{text-align:center}
+td.zero{color:var(--txt-3)}
+.co{font-weight:600;color:var(--txt);max-width:320px}
+.sub{display:block;margin-top:2px;font-size:11.5px;font-weight:400;color:var(--txt-3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tfoot td{height:auto;padding:13px 14px;background:var(--surf-3);font-weight:700;
+  border-top:1px solid var(--line-forte);border-bottom:0}
+tfoot td:first-child{padding-left:20px}
+
+/* coluna de empresa fixa durante a rolagem horizontal */
+#valores-tabela th:first-child,#valores-tabela td:first-child{position:sticky;left:0;z-index:2;
+  background:var(--surf);border-right:1px solid var(--line)}
+#valores-tabela th:first-child{background:var(--surf-2);z-index:3}
+#valores-tabela tbody tr:hover td:first-child{background:var(--surf-2)}
+#valores-tabela tfoot td:first-child{background:var(--surf-3)}
+
+.badge{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:999px;
+  font-size:11.5px;font-weight:600;white-space:nowrap}
+.badge.multi{background:var(--al-bg);color:var(--al-txt)}
+.badge.single{background:var(--azul-fraco);color:var(--azul-escuro)}
+html[data-tema="escuro"] .badge.single{color:#bcd5f8}
+.badge.ok{background:var(--ok-bg);color:var(--ok-txt)}
+.badge.warn{background:var(--al-bg);color:var(--al-txt)}
+
+.st{display:inline-flex;align-items:center;gap:7px;height:24px;padding:0 10px 0 4px;
+  border-radius:999px;font-size:11.5px;font-weight:600}
+.st .mk{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto}
+.st .mk i{width:7px;height:7px;border-radius:50%;display:block}
+.st.ok{background:var(--ok-bg);color:var(--ok-txt)}
+.st.ok .mk{background:rgba(22,163,74,.18)}
+.st.ok .mk i{background:var(--ok-pt)}
+.st.al{background:var(--al-bg);color:var(--al-txt)}
+.st.al .mk{background:rgba(239,68,68,.18)}
+.st.al .mk .ico{width:12px;height:12px;color:var(--al-pt);stroke-width:2.4}
+tr.alerta{background:var(--al-linha)}
+tr.alerta:hover{background:rgba(239,68,68,.1)}
+td.hoje{color:var(--al-txt);font-weight:600}
+.acao{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:var(--raio);
+  border:1px solid var(--line-forte);background:var(--surf);color:var(--txt);font-size:12px;
+  font-weight:600;cursor:pointer;transition:background-color .16s,border-color .16s}
+.acao:hover{background:var(--surf-3);border-color:var(--txt-3)}
+
+.paginacao{display:flex;align-items:center;gap:6px}
+.paginacao .btn{height:30px;width:30px;padding:0}
+.paginacao .btn .ico{width:16px;height:16px}
+.flip{transform:rotate(180deg)}
+
+.conf{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:200px}
+.conf-sel{height:30px;padding:0 26px 0 10px;border-radius:999px;border:1px solid var(--line-forte);
+  background-color:var(--surf);color:var(--txt-2);font-size:12px;font-weight:600;cursor:pointer;
+  appearance:none;-webkit-appearance:none;max-width:100%;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237d8899' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;background-size:13px}
+.conf-sel:hover{border-color:var(--txt-3)}
+.conf-sel:focus{outline:0;border-color:var(--azul);box-shadow:0 0 0 3px var(--azul-fraco)}
+.conf-sel[data-estado="ok"]{background-color:var(--ok-bg);color:var(--ok-txt);border-color:transparent}
+.conf-sel[data-estado="ver"]{background-color:var(--av-bg);color:var(--av-txt);border-color:transparent}
+.conf-sel option{background:var(--surf);color:var(--txt)}
+.chk{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;
+  border:1px solid var(--line-forte);background:var(--surf);color:var(--txt-2);font-size:12px;
+  font-weight:600;cursor:pointer;white-space:nowrap;transition:background-color .16s,border-color .16s,color .16s}
+.chk:hover{background:var(--surf-3);color:var(--txt)}
+.chk input{width:14px;height:14px;margin:0;accent-color:var(--ok-pt);cursor:pointer}
+.chk.on{background:var(--ok-bg);border-color:transparent;color:var(--ok-txt)}
+.chk.btn-ver.on{background:var(--av-bg);color:var(--av-txt)}
+.chk.btn-ver .ico{color:currentColor}
+.conf .sub{flex-basis:100%;margin:0}
+tr.conf-ok{background:rgba(22,163,74,.06)}
+tr.conf-ok:hover{background:rgba(22,163,74,.1)}
+tr.conf-ver{background:rgba(234,179,8,.09)}
+tr.conf-ver:hover{background:rgba(234,179,8,.14)}
+.badge.pend{background:var(--surf-3);color:var(--txt-2)}
+
+tr.group{cursor:pointer}
+tr.group td:first-child{padding-left:14px}
+.chev{color:var(--txt-3);transition:transform .18s}
+tr.group:hover .chev{color:var(--azul)}
+tr.open .chev{transform:rotate(90deg);color:var(--azul)}
+tr.child{background:var(--surf-2)}
+tr.child td{font-size:12.5px;color:var(--txt-2);border-bottom:1px dashed var(--line)}
+tr.child td:first-child{padding-left:46px;position:relative}
+tr.child td:first-child::before{content:"";position:absolute;left:26px;top:0;bottom:0;
+  border-left:2px solid var(--line-forte)}
+tr.child:hover{background:var(--surf-3)}
+
+.bar{height:4px;border-radius:999px;background:var(--surf-3);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:999px;
+  background:linear-gradient(90deg,var(--azul-claro),var(--azul))}
+
+/* ---------------- fonte de dados ---------------- */
+.drop{margin:20px;padding:30px 24px;text-align:center;border:1.5px dashed var(--line-forte);
+  border-radius:var(--raio-lg);background:var(--surf-2);transition:border-color .16s,background-color .16s}
+.drop.over{border-color:var(--azul);background:var(--azul-fraco)}
+.drop .mark{width:46px;height:46px;margin:0 auto 12px;border-radius:13px;display:grid;place-items:center;
+  background:var(--azul-fraco);color:var(--azul-escuro)}
+.drop .mark .ico{width:24px;height:24px}
+.drop h4{font-size:15px}
+.drop p{margin:5px auto 0;max-width:62ch;color:var(--txt-2);font-size:13px}
+.drop .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.hint{display:flex;gap:10px;align-items:flex-start;margin:0 20px 20px;padding:12px 14px;
+  border-radius:var(--raio);background:var(--azul-fraco);color:var(--txt);font-size:12.5px;line-height:1.5}
+html[data-tema="escuro"] .hint{background:var(--surf-2);border:1px solid var(--line)}
+.hint.aviso{background:var(--av-bg);color:var(--av-txt)}
+.hint.aviso .ico{color:var(--av-txt)}
+.hint .ico{margin-top:2px;color:var(--azul-escuro)}
+html[data-tema="escuro"] .hint .ico{color:var(--azul-claro)}
+.hint code,.drop code{background:var(--surf-3);padding:1px 5px;border-radius:4px;font-size:11.5px}
+.filelist{margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.filelist li{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.filelist li:last-child{border-bottom:0}
+.filelist li > .ico{color:var(--azul)}
+.filelist .name{flex:1;min-width:0;font-weight:600;font-size:13.5px}
+.filelist .meta{font-size:12px;color:var(--txt-3);white-space:nowrap}
+
+/* ---------------- vazio e avisos ---------------- */
+.blank{padding:56px 24px;text-align:center;color:var(--txt-2)}
+.blank .mark{width:44px;height:44px;margin:0 auto 12px;border-radius:12px;display:grid;place-items:center;
+  background:var(--surf-3);color:var(--txt-3)}
+.blank h3{font-size:15px;color:var(--txt);margin-bottom:4px}
+.blank p{margin:0;font-size:13px}
+.warnbox{display:flex;gap:10px;align-items:flex-start;margin:16px 20px;padding:12px 14px;
+  border-radius:var(--raio);background:var(--av-bg);color:var(--av-txt);font-size:12.5px}
+.warnbox b{display:block;margin-bottom:3px}
+.warnbox ul{margin:0;padding-left:18px}
+.warnbox .ico{margin-top:2px}
+
+/* ---------------- menus e modal ---------------- */
+.dropdown{position:relative}
+.menu{position:absolute;top:calc(100% + 6px);left:0;min-width:268px;max-height:320px;overflow:auto;
+  background:var(--surf);border:1px solid var(--line);border-radius:var(--raio);
+  box-shadow:var(--sombra-alta);padding:6px;z-index:40;display:none}
+.menu.open{display:block}
+.menu label{display:flex;align-items:center;gap:10px;padding:8px;border-radius:7px;cursor:pointer;font-size:13px}
+.menu label:hover{background:var(--surf-2)}
+.menu input[type=checkbox]{accent-color:var(--azul);width:15px;height:15px;flex:0 0 auto}
+.menu .acts{display:flex;gap:8px;margin-top:6px;padding-top:8px;border-top:1px solid var(--line)}
+.menu .acts .btn{flex:1;height:32px}
+
+.overlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  padding:24px;background:rgba(9,18,31,.62)}
+.overlay.open{display:flex}
+.modal{display:flex;flex-direction:column;width:100%;max-width:920px;max-height:86vh;
+  background:var(--surf);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sombra-alta)}
+.modal > header{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal > header h3{font-size:16px}
+.modal .body{padding:20px;overflow:auto}
+.modal > footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
+.maprow{border:1px solid var(--line);border-radius:var(--raio);padding:16px;background:var(--surf-2)}
+.maprow + .maprow{margin-top:12px}
+.maprow h4{font-size:13.5px}
+.maprow p{margin:3px 0 14px;font-size:11.5px;color:var(--txt-3)}
+.mapgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:12px}
+.mapgrid > div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.mapgrid label{font-size:11.5px;color:var(--txt-3)}
+.mapgrid select{height:var(--ctl);padding:0 26px 0 10px;appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237d8899' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right center;background-size:13px;background-position:right 9px center}border:1px solid var(--line);border-radius:8px;
+  background:var(--surf);font-size:13px;width:100%}
+.mapgrid select:focus{outline:0;border-color:var(--azul);box-shadow:0 0 0 3px var(--azul-fraco)}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);
+  display:flex;align-items:center;gap:9px;padding:12px 18px;border-radius:var(--raio);
+  background:var(--nav);color:var(--nav-txt);font-size:13px;z-index:60;
+  box-shadow:var(--sombra-alta);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------------- responsivo ---------------- */
+@media (max-width:1000px){
+  :root{--pad:16px}
+  nav.side{position:static;width:auto;inset:auto;flex-direction:row;align-items:center;gap:12px;
+    padding:10px 12px;border-right:0;border-bottom:1px solid var(--nav-line);overflow-x:auto}
+  .brand{margin:0;padding:0 12px 0 0;border-bottom:0;border-right:1px solid var(--nav-line)}
+  .brand p,.side .grupo,.side-foot{display:none}
+  .side ul{flex-direction:row;gap:6px;margin:0}
+  .tab{height:36px;white-space:nowrap}
+  .shell{margin-left:0}
+  header.top{height:auto;padding:10px var(--pad)}
+  .field select,.field input{max-width:132px}
+}
+@media (max-width:560px){
+  .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .kpi strong{font-size:20px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  nav.side,header.top,.toolbar,.page-acoes,.card-foot{display:none!important}
+  .shell{margin:0}.card{border-color:#999;box-shadow:none}
+}
+</style>
+</head>
+<body>
+<svg class="sr" aria-hidden="true"><defs>
+<g id="i-bank"><path d="M3 10 12 4l9 6"/><path d="M5 10v9h14v-9"/><path d="M9 19v-5h6v5"/></g>
+<g id="i-analytics"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></g>
+<g id="i-calendar"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></g>
+<g id="i-check"><path d="M20 6 9 17l-5-5"/></g>
+<g id="i-shield"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></g>
+<g id="i-folder"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></g>
+<g id="i-file"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></g>
+<g id="i-refresh"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></g>
+<g id="i-download"><path d="M12 3v12"/><path d="M7 11l5 5 5-5"/><path d="M4 21h16"/></g>
+<g id="i-tune"><path d="M4 7h11M19 7h1M4 17h5M13 17h7"/><circle cx="17" cy="7" r="2"/><circle cx="11" cy="17" r="2"/></g>
+<g id="i-close"><path d="M6 6l12 12M18 6 6 18"/></g>
+<g id="i-chev"><path d="M9 6l6 6-6 6"/></g>
+<g id="i-alert"><path d="M12 4l9 16H3z"/><path d="M12 10v5M12 18h.01"/></g>
+<g id="i-info"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></g>
+<g id="i-arrow"><path d="M5 6v7a3 3 0 0 0 3 3h11"/><path d="M16 12l4 4-4 4"/></g>
+<g id="i-lua"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></g>
+<g id="i-sol"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></g>
+<g id="i-busca"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></g>
+<g id="i-aviso"><path d="M12 3.6 21.5 20H2.5z"/><path d="M12 10v4.6M12 17.6h.02"/></g>
+<g id="i-lista"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.02M3.5 12h.02M3.5 18h.02"/></g>
+<g id="i-grupo"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/></g>
+<g id="i-vazio"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></g>
+</defs></svg>
+
+<nav class="side">
+  <div class="brand">
+    <div class="brand-mark"><svg class="ico" viewBox="0 0 24 24"><use href="#i-bank"/></svg></div>
+    <div>
+      <h1>Portal Financeiro</h1>
+      <p>Tesouraria &amp; Liquidez</p>
+    </div>
+  </div>
+  <div class="grupo">Análises</div>
+  <ul>
+    <li><button class="tab" data-view="valores" aria-current="page"><svg class="ico" viewBox="0 0 24 24"><use href="#i-analytics"/></svg>Valores por dia</button></li>
+    <li><button class="tab" data-view="frequencia"><svg class="ico" viewBox="0 0 24 24"><use href="#i-calendar"/></svg>Frequência</button></li>
+    <li><button class="tab" data-view="status"><svg class="ico" viewBox="0 0 24 24"><use href="#i-shield"/></svg>Status</button></li>
+  </ul>
+  <div class="grupo" style="padding-top:14px">Configuração</div>
+  <ul>
+    <li><button class="tab" data-view="fonte"><svg class="ico" viewBox="0 0 24 24"><use href="#i-folder"/></svg>Fonte de dados</button></li>
+  </ul>
+  <div class="side-foot">
+    <b id="foot-count">Nenhum dado carregado</b>
+    <span id="foot-src">Abra “Fonte de dados”</span>
+    <div class="estado"><span class="dot" id="foot-dot"></span><span id="foot-time">—</span></div>
+  </div>
+</nav>
+
+<div class="shell">
+  <div class="chrome">
+  <header class="top">
+    <div class="top-title">
+      <span id="top-title-txt">Valores por dia</span>
+      <small id="top-title-sub">Pagamentos semanais</small>
+    </div>
+    <div class="top-acoes">
+      <button class="btn ghost icon" id="btn-tema" title="Alternar tema claro e escuro" aria-label="Alternar tema">
+        <svg class="ico" viewBox="0 0 24 24"><use href="#i-lua" id="tema-ico"/></svg>
+      </button>
+      <button class="btn primary" id="btn-refresh" title="Reler os arquivos da pasta selecionada">
+        <svg class="ico" viewBox="0 0 24 24"><use href="#i-refresh"/></svg>Atualizar
+      </button>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="field"><label for="f-ano">Ano</label><select id="f-ano"></select></div>
+    <div class="field"><label for="f-mes">Mês</label><select id="f-mes"></select></div>
+    <div class="field"><label for="f-semana">Semana</label><select id="f-semana"></select></div>
+    <div class="sep"></div>
+    <div class="field" id="grupo-field" hidden><label for="f-grupo">Agrupar por</label><select id="f-grupo"></select></div>
+    <div class="dropdown">
+      <button class="btn" id="dep-btn" aria-expanded="false">
+        <svg class="ico" viewBox="0 0 24 24"><use href="#i-tune"/></svg>Departamentos
+        <span class="count" id="dep-count">0</span>
+      </button>
+      <div class="menu" id="dep-menu"></div>
+    </div>
+    <div class="dropdown">
+      <button class="btn" id="nat-btn" aria-expanded="false">
+        <svg class="ico" viewBox="0 0 24 24"><use href="#i-tune"/></svg>Naturezas
+        <span class="count" id="nat-count">0</span>
+      </button>
+      <div class="menu" id="nat-menu"></div>
+    </div>
+    <div class="field">
+      <svg class="ico ico-sm" viewBox="0 0 24 24" style="color:var(--txt-3)"><use href="#i-busca"/></svg>
+      <input id="f-busca" type="search" placeholder="Filtrar por nome" aria-label="Filtrar por nome">
+    </div>
+    <button class="btn" id="btn-limpar" hidden>
+      <svg class="ico" viewBox="0 0 24 24"><use href="#i-close"/></svg>Limpar filtros
+    </button>
+  </div>
+  </div>
+
+  <main>
+    <!-- ============ VALORES ============ -->
+    <section id="view-valores">
+      <div class="page-head">
+        <div>
+          <h2>Análise semanal de valores</h2>
+          <p id="valores-sub">Montante pago por beneficiário, de segunda a sexta-feira.</p>
+        </div>
+        <div class="page-acoes">
+          <div class="dropdown">
+            <button class="btn" id="banco-btn" aria-expanded="false">
+              <svg class="ico" viewBox="0 0 24 24"><use href="#i-tune"/></svg>Bancos
+              <span class="count" id="banco-count">0</span>
+            </button>
+            <div class="menu" id="banco-menu"></div>
+          </div>
+          <button class="btn" data-csv="valores"><svg class="ico" viewBox="0 0 24 24"><use href="#i-download"/></svg>Exportar</button>
+        </div>
+      </div>
+      <div id="valores-kpis" class="kpis"></div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Pagamentos por dia da semana</h3>
+          <span id="valores-periodo"></span>
+        </div>
+        <div class="scroll" id="valores-tabela"></div>
+        <div class="card-foot"><span id="valores-foot"></span></div>
+      </div>
+    </section>
+
+    <!-- ============ FREQUÊNCIA ============ -->
+    <section id="view-frequencia" hidden>
+      <div class="page-head">
+        <div>
+          <h2>Frequência de pagamentos</h2>
+          <p>Quantidade de transações por empresa na semana. Clique na linha para ver cada pagamento.</p>
+        </div>
+        <div class="page-acoes">
+          <div class="pills" id="freq-pills">
+            <button class="pill" data-freq="todos" aria-pressed="true">Todas</button>
+            <button class="pill" data-freq="1">Apenas 1</button>
+            <button class="pill" data-freq="2">Mais de 1</button>
+          </div>
+          <button class="btn" data-csv="frequencia"><svg class="ico" viewBox="0 0 24 24"><use href="#i-download"/></svg>Exportar</button>
+        </div>
+      </div>
+      <div id="freq-kpis" class="kpis"></div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Empresas pagas na semana</h3>
+          <span id="freq-periodo"></span>
+        </div>
+        <div class="scroll" id="freq-tabela"></div>
+        <div class="card-foot"><span id="freq-foot"></span></div>
+      </div>
+    </section>
+
+    <!-- ============ STATUS ============ -->
+    <section id="view-status" hidden>
+      <div class="page-head">
+        <div>
+          <h2>Monitoramento de status</h2>
+          <p>Empresas acima do limite de alerta recebem sinalização imediata.</p>
+        </div>
+        <div class="page-acoes">
+          <div class="pills" id="status-visao">
+            <button class="pill" data-visao="empresa" aria-pressed="true">
+              <svg class="ico ico-sm" viewBox="0 0 24 24" style="margin-right:6px"><use href="#i-grupo"/></svg>Por empresa
+            </button>
+            <button class="pill" data-visao="pagamento">
+              <svg class="ico ico-sm" viewBox="0 0 24 24" style="margin-right:6px"><use href="#i-lista"/></svg>Por pagamento
+            </button>
+          </div>
+          <div class="field"><label for="f-limite">Limite R$</label><input id="f-limite" class="num" type="number" min="0" step="500" value="10000" style="width:96px;min-width:0"></div>
+          <div class="field"><label for="f-conf">Conferência</label>
+            <select id="f-conf">
+              <option value="todas">Todas</option>
+              <option value="pendentes">Pendentes</option>
+              <option value="verificar">A verificar</option>
+              <option value="autorizados">Autorizadas</option>
+            </select>
+          </div>
+          <div class="pills" id="status-pills">
+            <button class="pill" data-st="todos" aria-pressed="true">Ver todos</button>
+            <button class="pill" data-st="abaixo">Normal</button>
+            <button class="pill" data-st="acima">Alerta</button>
+          </div>
+          <button class="btn escuro" data-csv="status"><svg class="ico" viewBox="0 0 24 24"><use href="#i-download"/></svg>Exportar relatório</button>
+        </div>
+      </div>
+      <div id="status-kpis" class="kpis"></div>
+      <div class="card destaque">
+        <div class="card-head">
+          <h3 id="status-titulo">Situação por empresa</h3>
+          <span id="status-periodo"></span>
+        </div>
+        <div class="scroll" id="status-tabela"></div>
+        <div class="card-foot">
+          <span id="status-foot"></span>
+          <div class="paginacao" id="status-pag" hidden>
+            <button class="btn icon" id="pag-ant" aria-label="Página anterior"><svg class="ico flip" viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+            <button class="btn icon" id="pag-prox" aria-label="Próxima página"><svg class="ico" viewBox="0 0 24 24"><use href="#i-chev"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FONTE DE DADOS ============ -->
+    <section id="view-fonte" hidden>
+      <div class="page-head">
+        <div>
+          <h2>Fonte de dados</h2>
+          <p>Aponte para a pasta da rede com as planilhas de pagamentos. Um arquivo por ano, ou vários — o dashboard une tudo.</p>
+        </div>
+        <div class="page-acoes">
+          <div class="field"><label for="f-usuario">Conferência por</label>
+            <input id="f-usuario" type="text" placeholder="Seu nome" style="min-width:140px"></div>
+          <button class="btn" id="btn-salvar-rev"><svg class="ico" viewBox="0 0 24 24"><use href="#i-download"/></svg>Salvar conferências</button>
+          <label class="btn" for="in-rev"><svg class="ico" viewBox="0 0 24 24"><use href="#i-file"/></svg>Carregar conferências</label>
+          <input id="in-rev" type="file" class="sr" accept=".json,application/json">
+          <button class="btn" id="btn-limpar-rev" hidden></button>
+          <button class="btn" id="btn-esquecer" hidden><svg class="ico" viewBox="0 0 24 24"><use href="#i-close"/></svg>Esquecer dados salvos</button>
+          <button class="btn" id="btn-map"><svg class="ico" viewBox="0 0 24 24"><use href="#i-tune"/></svg>Ajustar colunas</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="drop" id="drop">
+          <div class="mark"><svg class="ico" viewBox="0 0 24 24"><use href="#i-folder"/></svg></div>
+          <h4>Selecione a pasta ou arraste as planilhas aqui</h4>
+          <p>Aceita <code>.xlsx</code>, <code>.xlsm</code>, <code>.xls</code> e <code>.csv</code>. Subpastas por ano são lidas automaticamente.</p>
+          <div class="row">
+            <button class="btn primary" id="btn-dir"><svg class="ico" viewBox="0 0 24 24"><use href="#i-folder"/></svg>Selecionar pasta da rede</button>
+            <button class="btn" id="btn-files"><svg class="ico" viewBox="0 0 24 24"><use href="#i-file"/></svg>Selecionar arquivos</button>
+            <label class="btn" for="in-folder"><svg class="ico" viewBox="0 0 24 24"><use href="#i-folder"/></svg>Selecionar pasta (todos navegadores)</label>
+          </div>
+          <input id="in-files" type="file" class="sr" multiple accept=".xlsx,.xlsm,.xls,.csv">
+          <input id="in-folder" type="file" class="sr" multiple webkitdirectory directory>
+        </div>
+        <div class="hint" id="cache-info"></div>
+        <div class="hint" id="rev-info">
+          <svg class="ico ico-sm" viewBox="0 0 24 24"><use href="#i-check"/></svg>
+          <div><b>Conferências.</b> <span id="rev-estado">Nenhuma marcação ainda.</span>
+            Elas ficam neste computador, separadas dos dados. <b>Salvar conferências</b> gera um
+            arquivo <code>.json</code> que pode ser guardado na rede e carregado em outra máquina —
+            é assim que a marcação circula entre as pessoas.</div>
+        </div>
+        <div class="hint" id="auto-hint">
+          <svg class="ico ico-sm" viewBox="0 0 24 24"><use href="#i-info"/></svg>
+          <div id="auto-hint-text"></div>
+        </div>
+        <ul class="filelist" id="filelist"></ul>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Colunas reconhecidas na planilha</h3></div>
+        <div class="scroll" id="schema-tabela"></div>
+        <div class="card-foot"><span>Os nomes das colunas são reconhecidos automaticamente. Se algum não for encontrado, use “Ajustar colunas”.</span></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="map-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="map-title">
+    <header>
+      <h3 id="map-title">Ajustar colunas</h3>
+      <button class="btn icon" id="map-close" aria-label="Fechar"><svg class="ico" viewBox="0 0 24 24"><use href="#i-close"/></svg></button>
+    </header>
+    <div class="body" id="map-body"></div>
+    <footer>
+      <button class="btn" id="map-cancel">Cancelar</button>
+      <button class="btn primary" id="map-save">Aplicar e recalcular</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- SheetJS (xlsx) 0.18.5 carregado via CDN (Apache-2.0). Para uso offline, baixe o arquivo e aponte o src para a copia local. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Opcional: gerado pelo consolidar.py. Se o arquivo nao existir (erro 404 no console), use o seletor de pasta. -->
+<script src="dados.js"></script>
+<script>
+/* ============================================================
+   Dashboard de pagamentos semanais — núcleo
+   Os dados nunca saem do navegador (a biblioteca SheetJS é carregada por CDN).
+   ============================================================ */
+"use strict";
+
+const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho",
+  "Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const MES_CURTO = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+const DIAS = ["Segunda","Terça","Quarta","Quinta","Sexta"];
+const SEMANA_NOME = ["Primeira semana","Segunda semana","Terceira semana","Quarta semana","Quinta semana"];
+
+const CAMPOS = {
+  data:         { rotulo:"Data", obrig:true,
+                  chaves:["data pagamento","data de pagamento","data do pagamento","dt pagamento","data baixa","data","dt","vencimento","pagamento em","competencia"] },
+  empresa:      { rotulo:"Beneficiário", obrig:true,
+                  chaves:["beneficiario","empresa","fornecedor","razao social","credor","cliente","nome fornecedor","destinatario","favorecido"] },
+  favorecido:   { rotulo:"Favorecido", obrig:false,
+                  chaves:["favorecido","nome favorecido","favorecido pagamento","titular","conta favorecido"] },
+  valor:        { rotulo:"Valor", obrig:true,
+                  chaves:["valor pago","valor do pagamento","valor liquido","montante","valor total","valor","vlr","total pago","total"] },
+  banco:        { rotulo:"Banco", obrig:false,
+                  chaves:["banco","instituicao financeira","instituicao","bco","conta bancaria","banco pagador"] },
+  departamento: { rotulo:"Departamento", obrig:false,
+                  chaves:["departamento solicitante","departamento","depto","setor","area solicitante","area","solicitante","requisitante","centro de custo","cc"] },
+  natureza:     { rotulo:"Descrição das naturezas", obrig:false,
+                  chaves:["descricao das naturezas","descricao da natureza","naturezas","natureza da despesa","natureza","rubrica","conta contabil","classificacao"] },
+  descricao:    { rotulo:"Descrição / documento", obrig:false,
+                  chaves:["descricao","historico","observacao","obs","documento","nota fiscal","nf","titulo","referencia","finalidade"] }
+};
+const CAMPO_IDS = Object.keys(CAMPOS);
+
+/* ---------------- Estado ---------------- */
+const S = {
+  recs: [],            // registros normalizados
+  arquivos: [],        // {nome, caminho, tamanho, mtime, abas:[...]}
+  cruas: new Map(),    // "arquivo::aba" -> {aoa, headerRow, headers, assinatura}
+  overrides: {},       // assinatura -> {campo: indiceColuna}
+  dirHandle: null,
+  permPendente: false,
+  cacheSalvo: false, cacheQuando: null, cacheOnde: "", cacheGrande: false, origemAnterior: null,
+  ultimaLeitura: null,
+  assinaturaPasta: "",
+  view: "valores",
+  filtros: { ano:"todos", mes:"todos", semana:"todas", deps:new Set(), bancos:new Set(),
+             naturezas:new Set(), grupo:"empresa", busca:"", freq:"todos", st:"todos",
+             conf:"todas", limite:10000 },
+  rotulos: { empresa:"Empresa", favorecido:"" },
+  abertos: new Set(),  // empresas expandidas na página de frequência
+  statusVisao: "empresa",
+  revisoes: {},        // chave do pagamento -> { e:"ok"|"ver", q:ISO, n:responsável }
+  usuario: "",
+  pag: 1,
+  avisos: []
+};
+
+/* ---------------- Utilidades ---------------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const norm = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+  .replace(/[^a-z0-9]+/g," ").trim();
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtN = new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const brl = v => "R$ " + fmtN.format(v || 0);
+const brlCurto = v => {
+  const a = Math.abs(v||0);
+  if (a >= 1e6) return "R$ " + fmtN.format(v/1e6).replace(",00","") + " mi";
+  if (a >= 1e3) return "R$ " + new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(v/1e3) + " mil";
+  return brl(v);
+};
+const dataBR = d => String(d.getDate()).padStart(2,"0") + " " + MES_CURTO[d.getMonth()] + " " + d.getFullYear();
+const svg = (id,cls) => `<svg class="ico ${cls||""}" viewBox="0 0 24 24" aria-hidden="true"><use href="#${id}"/></svg>`;
+
+let toastTimer;
+function toast(msg){
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove("show"), 3600);
+}
+/* Semanas do mês em blocos de segunda a domingo. Um pedaço solto no começo ou no
+   fim do mês, formado apenas por sábado e domingo, é incorporado à semana vizinha —
+   sem isso, um mês que começa no domingo criaria uma "primeira semana" de um dia só
+   e o mês passaria a ter seis semanas. Assim a contagem vai de 1 a 5, e o dia 1º
+   está sempre na primeira semana. */
+const _semanasCache = new Map();
+function mapaSemanas(ano, mes){
+  const chave = ano + "-" + mes;
+  if (_semanasCache.has(chave)) return _semanasCache.get(chave);
+  const totalDias = new Date(ano, mes + 1, 0).getDate();
+  const blocos = [];
+  let atual = null;
+  for (let dia = 1; dia <= totalDias; dia++){
+    const du = (new Date(ano, mes, dia).getDay() + 6) % 7;   // segunda = 0
+    if (!atual || du === 0){ atual = { dias:[], util:false }; blocos.push(atual); }
+    atual.dias.push(dia);
+    if (du <= 4) atual.util = true;
+  }
+  if (blocos.length > 1 && !blocos[0].util){
+    blocos[1].dias = blocos[0].dias.concat(blocos[1].dias);
+    blocos.shift();
+  }
+  if (blocos.length > 1 && !blocos[blocos.length - 1].util){
+    const ultimo = blocos.pop();
+    blocos[blocos.length - 1].dias = blocos[blocos.length - 1].dias.concat(ultimo.dias);
+  }
+  const mapa = {};
+  blocos.forEach((b, i) => b.dias.forEach(dia => { mapa[dia] = i + 1; }));
+  _semanasCache.set(chave, mapa);
+  return mapa;
+}
+function semanaDoMes(d){
+  return mapaSemanas(d.getFullYear(), d.getMonth())[d.getDate()];
+}
+const diaUtil = d => (d.getDay() + 6) % 7;          // 0=seg ... 6=dom
+
+/* ---------------- Conversões ---------------- */
+function paraData(v){
+  if (v instanceof Date && !isNaN(v)) return new Date(v.getFullYear(), v.getMonth(), v.getDate());
+  if (typeof v === "number" && v > 20000 && v < 80000){
+    const ms = Math.round((v - 25569) * 86400000);
+    const d = new Date(ms);
+    return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  }
+  if (typeof v === "string"){
+    const s = v.trim();
+    let m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+    if (m){
+      let [_,dd,mm,aa] = m; aa = +aa; if (aa < 100) aa += aa < 50 ? 2000 : 1900;
+      const d = new Date(aa, +mm - 1, +dd);
+      return isNaN(d) ? null : d;
+    }
+    m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+  }
+  return null;
+}
+function paraNumero(v){
+  if (typeof v === "number") return isFinite(v) ? v : null;
+  if (v == null) return null;
+  let s = String(v).trim();
+  if (!s) return null;
+  const neg = /^\(.*\)$/.test(s) || /-/.test(s.replace(/[^\d\-]/g,"").slice(0,1));
+  s = s.replace(/[R$\s\u00a0()]/gi,"").replace(/[^\d.,\-]/g,"");
+  if (!s) return null;
+  const ultVirg = s.lastIndexOf(","), ultPonto = s.lastIndexOf(".");
+  if (ultVirg > -1 && ultPonto > -1){
+    s = ultVirg > ultPonto ? s.replace(/\./g,"").replace(",",".") : s.replace(/,/g,"");
+  } else if (ultVirg > -1){
+    s = /,\d{3}$/.test(s) && /^\d{1,3}(,\d{3})+$/.test(s) ? s.replace(/,/g,"") : s.replace(",",".");
+  } else if (ultPonto > -1 && /^\-?\d{1,3}(\.\d{3})+$/.test(s)){
+    s = s.replace(/\./g,"");
+  }
+  const n = parseFloat(s);
+  if (!isFinite(n)) return null;
+  return neg && n > 0 ? -n : n;
+}
+
+/* ---------------- Detecção de colunas ---------------- */
+function pontuaCabecalho(linha){
+  let p = 0;
+  linha.forEach(c => {
+    const n = norm(c);
+    if (!n) return;
+    for (const id of CAMPO_IDS)
+      if (CAMPOS[id].chaves.some(k => n === k || n.includes(k))) { p++; break; }
+  });
+  return p;
+}
+function achaCabecalho(aoa){
+  let melhor = -1, pontos = 0;
+  for (let i = 0; i < Math.min(20, aoa.length); i++){
+    const p = pontuaCabecalho(aoa[i] || []);
+    if (p > pontos){ pontos = p; melhor = i; }
+  }
+  return pontos >= 2 ? melhor : -1;
+}
+function mapeia(headers){
+  const usados = new Set(), mapa = {};
+  for (const id of CAMPO_IDS){
+    let escolha = -1, melhorPeso = -1;
+    headers.forEach((h,i) => {
+      if (usados.has(i)) return;
+      const n = norm(h);
+      if (!n) return;
+      CAMPOS[id].chaves.forEach((k,ordem) => {
+        let peso = -1;
+        if (n === k) peso = 1000 - ordem;
+        else if (n.startsWith(k) || n.endsWith(k)) peso = 600 - ordem;
+        else if (n.includes(k)) peso = 300 - ordem;
+        if (peso > melhorPeso){ melhorPeso = peso; escolha = i; }
+      });
+    });
+    if (escolha > -1 && melhorPeso > 0){ mapa[id] = escolha; usados.add(escolha); }
+  }
+  return mapa;
+}
+const assina = headers => headers.map(h => norm(h)).filter(Boolean).join("|").slice(0,300);
+
+/* ---------------- Leitura dos arquivos ---------------- */
+function anoDoNome(nome){
+  const m = String(nome).match(/(20\d{2})/);
+  return m ? +m[1] : null;
+}
+async function leArquivo(file, caminho){
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type:"array", cellDates:true, dense:false });
+  const abas = [];
+  wb.SheetNames.forEach(nomeAba => {
+    const aoa = XLSX.utils.sheet_to_json(wb.Sheets[nomeAba], { header:1, raw:true, defval:null, blankrows:false });
+    if (!aoa.length) return;
+    const hr = achaCabecalho(aoa);
+    if (hr < 0){
+      const largura = Math.max(...aoa.map(l => (l || []).filter(c => c != null && c !== "").length));
+      abas.push({ nome:nomeAba, ok:false, motivo:"cabeçalho não reconhecido", registros:0,
+                  silencioso: aoa.length < 4 || largura < 3 });
+      return;
+    }
+    const headers = (aoa[hr] || []).map((h,i) => (norm(h) ? String(h).trim() : "Coluna " + (i+1)));
+    const chave = (caminho || file.name) + "::" + nomeAba;
+    S.cruas.set(chave, { aoa, hr, headers, assinatura:assina(headers), arquivo:caminho || file.name, aba:nomeAba });
+    abas.push({ nome:nomeAba, ok:true, chave, headers, registros:0 });
+  });
+  return { nome:file.name, caminho:caminho || file.name, tamanho:file.size,
+           mtime:file.lastModified ? new Date(file.lastModified) : null,
+           anoNome:anoDoNome(caminho || file.name), abas };
+}
+function reconstroi(){
+  S.recs = []; S.avisos = []; S.rotulos = { empresa:"Empresa", favorecido:"" };
+  for (const arq of S.arquivos){
+    for (const aba of arq.abas){
+      if (!aba.ok) { if (!aba.silencioso) S.avisos.push(`${arq.nome} › ${aba.nome}: ${aba.motivo}.`); continue; }
+      const cru = S.cruas.get(aba.chave);
+      if (!cru) continue;
+      const mapa = Object.assign({}, mapeia(cru.headers), S.overrides[cru.assinatura] || {});
+      aba.mapa = mapa;
+      const faltando = CAMPO_IDS.filter(id => CAMPOS[id].obrig && !(id in mapa));
+      if (faltando.length){
+        aba.registros = 0;
+        S.avisos.push(`${arq.nome} › ${aba.nome}: não encontrei ${faltando.map(f=>CAMPOS[f].rotulo.toLowerCase()).join(" e ")}. Use “Ajustar colunas”.`);
+        continue;
+      }
+      S.rotulos.empresa = cru.headers[mapa.empresa] || "Empresa";
+      if (mapa.favorecido != null) S.rotulos.favorecido = cru.headers[mapa.favorecido];
+      let n = 0, ignorados = 0;
+      for (let i = cru.hr + 1; i < cru.aoa.length; i++){
+        const linha = cru.aoa[i] || [];
+        const empresa = String(linha[mapa.empresa] ?? "").trim();
+        const data = paraData(linha[mapa.data]);
+        const valor = paraNumero(linha[mapa.valor]);
+        if (!empresa || !data || valor == null){ if (linha.some(c => c != null && c !== "")) ignorados++; continue; }
+        const en = norm(empresa);
+        if (/^(total|subtotal|soma|geral|totais)\b/.test(en)) continue;
+        S.recs.push({
+          data, empresa, valor,
+          banco: mapa.banco != null ? (String(linha[mapa.banco] ?? "").trim() || "Não informado") : "Não informado",
+          depto: mapa.departamento != null ? (String(linha[mapa.departamento] ?? "").trim() || "Não informado") : "Não informado",
+          favorecido: mapa.favorecido != null ? String(linha[mapa.favorecido] ?? "").trim() : "",
+          natureza: mapa.natureza != null ? (String(linha[mapa.natureza] ?? "").trim() || "Não informada") : "Não informada",
+          desc:  mapa.descricao != null ? String(linha[mapa.descricao] ?? "").trim() : "",
+          ano: data.getFullYear(), mes: data.getMonth(), semana: semanaDoMes(data), dia: diaUtil(data),
+          origem: arq.nome, aba: aba.nome
+        });
+        n++;
+      }
+      aba.registros = n; aba.ignorados = ignorados;
+    }
+  }
+  S.recs.sort((a,b) => a.data - b.data || a.empresa.localeCompare(b.empresa,"pt-BR"));
+  aplicaChaves(S.recs);
+  S.ultimaLeitura = new Date();
+}
+
+/* Identidade de cada pagamento para a conferência. Não usa o número da linha:
+   a planilha é relida a cada atualização e as linhas mudam de lugar. Lançamentos
+   idênticos no mesmo dia são separados pela ordem de ocorrência. */
+function aplicaChaves(recs){
+  const cont = new Map();
+  for (const r of recs){
+    const base = [
+      r.data.getFullYear() * 10000 + (r.data.getMonth() + 1) * 100 + r.data.getDate(),
+      norm(r.empresa), Math.round(r.valor * 100), norm(r.banco), norm(r.natureza)
+    ].join("|");
+    const n = (cont.get(base) || 0) + 1;
+    cont.set(base, n);
+    r.chaveRev = base + "#" + n;
+  }
+}
+const revisaoDe = r => S.revisoes[r.chaveRev] || null;
+/* A conferência de uma empresa é sempre guardada na semana a que o pagamento
+   pertence — nunca no recorte que estava na tela. Assim, marcar na semana 2 de
+   março continua valendo quando o filtro está em "todos os meses", e marcar na
+   visão geral desce para cada semana em que a empresa recebeu. */
+function chaveSemana(nome, ano, mes, semana){
+  return ["EMP", norm(nome), ano, mes, semana, S.filtros.grupo].join("|");
+}
+/* As semanas que a linha da empresa representa no recorte atual. */
+function semanasDaEmpresa(e){
+  const chaves = new Set();
+  for (const r of e.recs) chaves.add(chaveSemana(e.empresa, r.ano, r.mes, r.semana));
+  return [...chaves];
+}
+/* Situação consolidada: autorizada só quando todas as semanas estão autorizadas;
+   basta uma a verificar para a linha inteira pedir verificação. */
+function estadoEmpresa(e){
+  const chaves = semanasDaEmpresa(e);
+  const revs = chaves.map(k => S.revisoes[k]).filter(Boolean);
+  const ok = revs.filter(r => r.e === "ok").length;
+  const ver = revs.filter(r => r.e === "ver").length;
+  const total = chaves.length;
+  const estado = ver ? "ver" : (ok === total && total ? "ok" : "");
+  const ultima = revs.slice().sort((x,y) => String(y.q||"").localeCompare(String(x.q||"")))[0] || null;
+  return { chaves, estado, ok, ver, total, parcial: ok > 0 && ok < total && !ver, ultima };
+}
+function defineRevisaoEmpresa(e, estado){
+  semanasDaEmpresa(e).forEach(k => defineRevisao(k, estado));
+}
+const estadoRevisao = r => (revisaoDe(r) || {}).e || "";
+
+/* ---------------- Filtros ---------------- */
+function opcoes(){
+  const anos = [...new Set(S.recs.map(r => r.ano))].sort((a,b) => b - a);
+  const f = S.filtros;
+  const noAno = S.recs.filter(r => f.ano === "todos" || r.ano === +f.ano);
+  const meses = [...new Set(noAno.map(r => r.mes))].sort((a,b) => a - b);
+  const noMes = noAno.filter(r => f.mes === "todos" || r.mes === +f.mes);
+  const semanas = [...new Set(noMes.map(r => r.semana))].sort((a,b) => a - b);
+  const deps = [...new Set(S.recs.map(r => r.depto))].sort((a,b) => a.localeCompare(b,"pt-BR"));
+  const bancos = [...new Set(S.recs.map(r => r.banco))].sort((a,b) => a.localeCompare(b,"pt-BR"));
+  const naturezas = [...new Set(S.recs.map(r => r.natureza))].sort((a,b) => a.localeCompare(b,"pt-BR"));
+  return { anos, meses, semanas, deps, bancos, naturezas };
+}
+function filtra(opts = {}){
+  const f = S.filtros;
+  return S.recs.filter(r => {
+    if (f.ano !== "todos" && r.ano !== +f.ano) return false;
+    if (f.mes !== "todos" && r.mes !== +f.mes) return false;
+    if (f.semana !== "todas" && r.semana !== +f.semana) return false;
+    if (f.deps.size && !f.deps.has(r.depto)) return false;
+    if (f.naturezas.size && !f.naturezas.has(r.natureza)) return false;
+    if (!opts.ignoraBanco && f.bancos.size && !f.bancos.has(r.banco)) return false;
+    if (!opts.ignoraBusca && f.busca && !norm(chaveGrupo(r)).includes(norm(f.busca))) return false;
+    return true;
+  });
+}
+function contraparte(r){
+  const outro = S.filtros.grupo === "favorecido" ? r.empresa : (r.favorecido || "");
+  return outro && norm(outro) !== norm(chaveGrupo(r)) ? outro : "";
+}
+function chaveGrupo(r){
+  return S.filtros.grupo === "favorecido" && r.favorecido ? r.favorecido : r.empresa;
+}
+const rotuloGrupo = () => S.filtros.grupo === "favorecido" && S.rotulos.favorecido
+  ? S.rotulos.favorecido : (S.rotulos.empresa || "Empresa");
+
+function porEmpresa(recs){
+  const m = new Map();
+  for (const r of recs){
+    const chave = chaveGrupo(r);
+    let e = m.get(chave);
+    if (!e){ e = { empresa:chave, dias:[0,0,0,0,0,0,0], qtdDias:[0,0,0,0,0,0,0],
+                   total:0, qtd:0, bancos:new Set(), deps:new Set(), nats:new Set(),
+                   contras:new Set(), recs:[] }; m.set(chave, e); }
+    e.dias[r.dia] += r.valor; e.qtdDias[r.dia]++; e.total += r.valor; e.qtd++;
+    e.bancos.add(r.banco); e.deps.add(r.depto); e.nats.add(r.natureza);
+    if (contraparte(r)) e.contras.add(contraparte(r));
+    e.recs.push(r);
+  }
+  return [...m.values()].sort((a,b) => b.total - a.total || a.empresa.localeCompare(b.empresa,"pt-BR"));
+}
+/* Janela de datas da semana selecionada e a semana imediatamente anterior.
+   Só existe quando ano, mês e semana estão definidos. */
+function janelaSemana(){
+  const f = S.filtros;
+  if (f.ano === "todos" || f.mes === "todos" || f.semana === "todas") return null;
+  const ano = +f.ano, mes = +f.mes, sem = +f.semana;
+  const dias = new Date(ano, mes + 1, 0).getDate();
+  let ini = null, fim = null;
+  for (let d = 1; d <= dias; d++){
+    const data = new Date(ano, mes, d);
+    if (semanaDoMes(data) === sem){ if (!ini) ini = data; fim = data; }
+  }
+  if (!ini) return null;
+  const antFim = new Date(ini.getFullYear(), ini.getMonth(), ini.getDate() - 1);
+  const antIni = new Date(ini.getFullYear(), ini.getMonth(), ini.getDate() - 7);
+  return { ini, fim, antIni, antFim };
+}
+/* Mesmos filtros de dimensão, mas na semana anterior. */
+function totalSemanaAnterior(){
+  const j = janelaSemana();
+  if (!j) return null;
+  const f = S.filtros;
+  const dentro = S.recs.filter(r => r.data >= j.antIni && r.data <= j.antFim
+    && (!f.deps.size || f.deps.has(r.depto))
+    && (!f.naturezas.size || f.naturezas.has(r.natureza))
+    && (!f.bancos.size || f.bancos.has(r.banco))
+    && (!f.busca || norm(chaveGrupo(r)).includes(norm(f.busca))));
+  return { total:dentro.reduce((s,r) => s + r.valor, 0), qtd:dentro.length };
+}
+function variacao(atual, anterior){
+  if (anterior == null || !anterior.total) return "";
+  const p = (atual / anterior.total - 1) * 100;
+  const seta = p >= 0 ? "▲" : "▼";
+  const n = new Intl.NumberFormat("pt-BR",{maximumFractionDigits:1}).format(Math.abs(p));
+  return `${seta} ${n}% vs. semana anterior`;
+}
+
+function rotuloPeriodo(){
+  const f = S.filtros;
+  const p = [];
+  p.push(f.semana === "todas" ? "todas as semanas"
+    : (SEMANA_NOME[f.semana-1] || "semana " + f.semana).toLowerCase());
+  p.push(f.mes === "todos" ? "todos os meses" : MESES[f.mes]);
+  p.push(f.ano === "todos" ? "todos os anos" : f.ano);
+  return p.join(" · ");
+}
+
+/* ============================================================
+   Interface, carregamento de arquivos e atualização
+   ============================================================ */
+
+/* ---------------- Persistência local ----------------
+   Alguns navegadores bloqueiam o armazenamento (modo privado, política
+   corporativa, arquivo aberto de certos caminhos). Tudo passa por este
+   invólucro para que o painel continue funcionando sem ele. */
+const LS = {
+  ok: true,
+  get(k){ try{ return window.localStorage.getItem(k); }catch(e){ LS.ok = false; return null; } },
+  set(k,v){ try{ window.localStorage.setItem(k,v); return true; }catch(e){ if (!/quota/i.test(e.name)) LS.ok = false; return false; } },
+  del(k){ try{ window.localStorage.removeItem(k); }catch(e){} }
+};
+const LS_MAP = "pagamentos.overrides.v1", LS_FILT = "pagamentos.filtros.v1";
+function salvaOverrides(){ LS.set(LS_MAP, JSON.stringify(S.overrides)); }
+function salvaFiltros(){
+  try{
+    const f = S.filtros;
+    LS.set(LS_FILT, JSON.stringify({ ano:f.ano, mes:f.mes, semana:f.semana,
+      deps:[...f.deps], bancos:[...f.bancos], naturezas:[...f.naturezas], grupo:f.grupo,
+      limite:f.limite, freq:f.freq, st:f.st, conf:f.conf, statusVisao:S.statusVisao, view:S.view }));
+  }catch(e){}
+}
+function carregaPrefs(){
+  try{ S.overrides = JSON.parse(LS.get(LS_MAP) || "{}"); }catch(e){ S.overrides = {}; }
+  try{
+    const p = JSON.parse(LS.get(LS_FILT) || "{}");
+    if (p.ano) S.filtros.ano = p.ano;
+    if (p.mes !== undefined) S.filtros.mes = p.mes;
+    if (p.semana) S.filtros.semana = p.semana;
+    if (p.deps) S.filtros.deps = new Set(p.deps);
+    if (p.bancos) S.filtros.bancos = new Set(p.bancos);
+    if (p.naturezas) S.filtros.naturezas = new Set(p.naturezas);
+    if (p.grupo) S.filtros.grupo = p.grupo;
+    if (p.limite) S.filtros.limite = p.limite;
+    if (p.freq) S.filtros.freq = p.freq;
+    if (p.st) S.filtros.st = p.st;
+    if (p.statusVisao) S.statusVisao = p.statusVisao;
+    if (p.conf) S.filtros.conf = p.conf;
+    if (p.view) S.view = p.view;
+  }catch(e){}
+}
+
+/* ---------------- IndexedDB: guarda a pasta escolhida ---------------- */
+function idb(){
+  return new Promise((ok,err) => {
+    const req = indexedDB.open("pagamentos-dash", 1);
+    req.onupgradeneeded = () => req.result.createObjectStore("kv");
+    req.onsuccess = () => ok(req.result);
+    req.onerror = () => err(req.error);
+  });
+}
+async function idbSet(k,v){ try{ const db = await idb(); const t = db.transaction("kv","readwrite");
+  t.objectStore("kv").put(v,k); return new Promise(r => t.oncomplete = r); }catch(e){} }
+async function idbGet(k){ try{ const db = await idb(); const t = db.transaction("kv","readonly");
+  const q = t.objectStore("kv").get(k); return await new Promise(r => { q.onsuccess = () => r(q.result); q.onerror = () => r(null); }); }catch(e){ return null; } }
+
+/* ============================================================
+   Cópia local dos dados
+   A permissão da pasta não sobrevive ao fechamento do navegador, mas os dados
+   já lidos sim. Guardamos os registros normalizados (em formato compacto, com
+   dicionários para os textos repetidos) no IndexedDB e, se ele não estiver
+   disponível — o que acontece ao abrir o arquivo direto da rede em alguns
+   navegadores — no localStorage. Ao abrir, o painel mostra essa cópia na hora
+   e só relê a planilha quando você clica em Atualizar.
+   ============================================================ */
+const LS_CACHE = "pagamentos.cache.v1";
+const LS_REV = "pagamentos.revisoes.v1", LS_USER = "pagamentos.usuario.v1";
+const LIMITE_LS = 4.2 * 1024 * 1024;
+
+function compacta(recs){
+  const dics = {}, listas = {};
+  const ix = (campo, valor) => {
+    const d = dics[campo] || (dics[campo] = new Map());
+    const l = listas[campo] || (listas[campo] = []);
+    const v = valor || "";
+    if (!d.has(v)){ d.set(v, l.length); l.push(v); }
+    return d.get(v);
+  };
+  const linhas = recs.map(r => [
+    r.data.getFullYear() * 10000 + (r.data.getMonth() + 1) * 100 + r.data.getDate(),
+    Math.round(r.valor * 100),
+    ix("emp", r.empresa), ix("fav", r.favorecido), ix("ban", r.banco),
+    ix("dep", r.depto), ix("nat", r.natureza), ix("ori", r.origem), r.desc || ""
+  ]);
+  return { emp:listas.emp || [], fav:listas.fav || [], ban:listas.ban || [],
+           dep:listas.dep || [], nat:listas.nat || [], ori:listas.ori || [], linhas };
+}
+function descompacta(c){
+  return c.linhas.map(l => {
+    const n = l[0], data = new Date(Math.floor(n / 10000), Math.floor(n / 100) % 100 - 1, n % 100);
+    return { data, valor:l[1] / 100,
+      empresa:c.emp[l[2]] || "", favorecido:c.fav[l[3]] || "", banco:c.ban[l[4]] || "Não informado",
+      depto:c.dep[l[5]] || "Não informado", natureza:c.nat[l[6]] || "Não informada",
+      origem:c.ori[l[7]] || "", desc:l[8] || "",
+      ano:data.getFullYear(), mes:data.getMonth(), semana:semanaDoMes(data), dia:diaUtil(data), aba:"" };
+  });
+}
+async function salvaCache(){
+  if (!S.recs.length || S.origemTipo === "embutido") return;
+  const pacote = {
+    v:1, quando:new Date().toISOString(),
+    origemTipo:S.origemTipo, origemNome:S.origemNome,
+    rotulos:S.rotulos,
+    arquivos:S.arquivos.map(a => ({ nome:a.nome, caminho:a.caminho, mtime:a.mtime,
+      anoNome:a.anoNome, abas:a.abas.map(ab => ({ nome:ab.nome, ok:ab.ok, registros:ab.registros || 0 })) })),
+    dados:compacta(S.recs)
+  };
+  S.cacheSalvo = false;
+  try{
+    const db = await idb();
+    await new Promise((ok, err) => {
+      const t = db.transaction("kv", "readwrite");
+      t.objectStore("kv").put(pacote, "cache");
+      t.oncomplete = ok; t.onerror = () => err(t.error);
+    });
+    S.cacheSalvo = true; S.cacheQuando = pacote.quando; S.cacheOnde = "IndexedDB";
+    LS.del(LS_CACHE);
+    return;
+  }catch(e){}
+  try{
+    const txt = JSON.stringify(pacote);
+    if (txt.length > LIMITE_LS || !LS.set(LS_CACHE, txt)){ S.cacheGrande = LS.ok; S.cacheSalvo = false; return; }
+    S.cacheSalvo = true; S.cacheQuando = pacote.quando; S.cacheOnde = "navegador";
+  }catch(e){ S.cacheGrande = true; }
+}
+async function leCache(){
+  try{
+    const p = await idbGet("cache");
+    if (p && p.dados) return p;
+  }catch(e){}
+  try{
+    const txt = LS.get(LS_CACHE);
+    if (txt) return JSON.parse(txt);
+  }catch(e){}
+  return null;
+}
+async function esqueceCache(){
+  try{ const db = await idb(); const t = db.transaction("kv", "readwrite");
+    t.objectStore("kv").delete("cache"); t.objectStore("kv").delete("dir");
+    await new Promise(r => t.oncomplete = r); }catch(e){}
+  LS.del(LS_CACHE);
+  S.recs = []; S.arquivos = []; S.cruas.clear(); S.filesRef = [];
+  S.dirHandle = null; S.permPendente = false; S.cacheSalvo = false;
+  S.cacheQuando = null; S.origemTipo = null; S.origemNome = "";
+  S.ultimaLeitura = null; S.rotulos = { empresa:"Empresa", favorecido:"" };
+  tudo(); irPara("fonte");
+  toast(totalRevisoes()
+    ? "Dados apagados. As conferências marcadas foram mantidas."
+    : "Dados salvos apagados. Escolha a pasta novamente.");
+}
+async function restauraCache(){
+  const p = await leCache();
+  if (!p || !p.dados || !p.dados.linhas || !p.dados.linhas.length) return false;
+  S.recs = descompacta(p.dados);
+  S.recs.sort((a,b) => a.data - b.data || a.empresa.localeCompare(b.empresa,"pt-BR"));
+  aplicaChaves(S.recs);
+  S.rotulos = p.rotulos || { empresa:"Empresa", favorecido:"" };
+  S.arquivos = (p.arquivos || []).map(a => Object.assign({}, a, { mtime:a.mtime ? new Date(a.mtime) : null }));
+  S.ultimaLeitura = new Date(p.quando);
+  S.cacheQuando = p.quando; S.cacheSalvo = true;
+  S.origemTipo = "cache"; S.origemNome = p.origemNome || "planilhas salvas";
+  S.origemAnterior = p.origemTipo;
+  return true;
+}
+
+/* ---------------- Conferência dos pagamentos acima do limite ----------------
+   Guardada separadamente da cópia dos dados: é trabalho da pessoa, não da
+   planilha, e sobrevive a uma nova leitura ou à troca de pasta. */
+let revTimer = null;
+/* Grava nos dois lugares, sempre. O IndexedDB aguenta volume, mas há navegador
+   que o bloqueia em arquivo aberto da rede e há política corporativa que limpa
+   os dados de site ao fechar — o armazenamento local costuma sobreviver a um
+   desses casos, e ler dos dois na abertura cobre o outro. */
+async function gravaRevisoes(){
+  const txt = JSON.stringify(S.revisoes);
+  let idbOk = false, lsOk = false;
+  try{
+    const db = await idb();
+    await new Promise((ok, err) => {
+      const t = db.transaction("kv","readwrite");
+      t.objectStore("kv").put(S.revisoes, "revisoes");
+      t.oncomplete = ok; t.onerror = () => err(t.error);
+    });
+    idbOk = true;
+  }catch(e){}
+  lsOk = LS.set(LS_REV, txt);
+  S.revOnde = [idbOk ? "IndexedDB" : "", lsOk ? "navegador" : ""].filter(Boolean).join(" + ");
+  S.revSalvo = idbOk || lsOk;
+  S.revQuando = S.revSalvo ? new Date() : null;
+  atualizaEstadoRev();
+  return S.revSalvo;
+}
+function salvaRevisoes(){
+  clearTimeout(revTimer);
+  revTimer = setTimeout(gravaRevisoes, 150);
+}
+/* Última chance antes de a aba fechar: gravação síncrona no armazenamento local. */
+function flushRevisoes(){
+  clearTimeout(revTimer);
+  try{ LS.set(LS_REV, JSON.stringify(S.revisoes)); }catch(e){}
+}
+/* Lê as duas fontes e fica com a marca mais recente de cada pagamento. */
+async function carregaRevisoes(){
+  let deIdb = null, deLs = null;
+  try{ const r = await idbGet("revisoes"); if (r && typeof r === "object") deIdb = r; }catch(e){}
+  try{ const t = LS.get(LS_REV); if (t) deLs = JSON.parse(t); }catch(e){}
+  const junta = {};
+  for (const fonte of [deIdb, deLs]){
+    if (!fonte) continue;
+    for (const [k, v] of Object.entries(fonte)){
+      if (!v || !v.e) continue;
+      const atual = junta[k];
+      if (!atual || String(v.q || "") > String(atual.q || "")) junta[k] = v;
+    }
+  }
+  /* Marcas antigas gravadas com o recorte "todos/todas" no lugar da semana não
+     têm como ser reencontradas no novo formato: são descartadas na leitura. */
+  let descartadas = 0;
+  for (const k of Object.keys(junta)){
+    if (!k.startsWith("EMP|")) continue;
+    const p = k.split("|");
+    // EMP | nome | ano | mês | semana | agrupamento  →  as posições 2, 3 e 4 são numéricas
+    if (!/^\d+$/.test(p[2] || "") || !/^\d+$/.test(p[3] || "") || !/^\d+$/.test(p[4] || "")){
+      delete junta[k]; descartadas++;
+    }
+  }
+  if (descartadas) S.revDescartadas = descartadas;
+  S.revisoes = junta;
+  S.revOnde = [deIdb ? "IndexedDB" : "", deLs ? "navegador" : ""].filter(Boolean).join(" + ");
+  S.revSalvo = !!(deIdb || deLs);
+}
+function atualizaEstadoRev(){
+  const el = $("#rev-estado");
+  if (!el) return;
+  const n = totalRevisoes();
+  if (!n){ el.textContent = ""; return; }
+  if (!S.revSalvo){
+    el.innerHTML = `<b style="color:var(--al-txt)">Não foi possível guardar as ${n} conferências neste navegador.</b>
+      Use <b>Salvar conferências</b>, abaixo, para guardar o arquivo antes de fechar.`;
+    return;
+  }
+  el.textContent = `${n} conferência(s) guardada(s) em ${S.revOnde}`
+    + (S.revQuando ? ` · última às ${S.revQuando.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}` : "");
+}
+function defineRevisao(chave, estado){
+  if (!estado) delete S.revisoes[chave];
+  else S.revisoes[chave] = { e:estado, q:new Date().toISOString(), n:S.usuario || "" };
+  salvaRevisoes();
+}
+function limpaRevisoes(){
+  S.revisoes = {};
+  salvaRevisoes();
+  render();
+  toast("Conferências apagadas.");
+}
+function totalRevisoes(){ return Object.keys(S.revisoes).length; }
+function quandoRev(rev){
+  if (!rev || !rev.q) return "";
+  const d = new Date(rev.q);
+  const data = d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+  const hora = d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  return (rev.n ? rev.n + " · " : "") + data + " " + hora;
+}
+
+function exportaRevisoes(){
+  const n = totalRevisoes();
+  if (!n){ toast("Não há conferência marcada para salvar."); return; }
+  const pacote = { v:1, quando:new Date().toISOString(), responsavel:S.usuario || "", revisoes:S.revisoes };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(pacote, null, 1)], { type:"application/json" }));
+  const el = document.createElement("a");
+  el.href = url;
+  el.download = `conferencias-${new Date().toISOString().slice(0,10)}.json`;
+  el.click(); URL.revokeObjectURL(url);
+  toast(`${n} conferência(s) salvas em arquivo.`);
+}
+async function importaRevisoes(file){
+  try{
+    const p = JSON.parse(await file.text());
+    const vindas = p && p.revisoes ? p.revisoes : p;
+    if (!vindas || typeof vindas !== "object") throw new Error("formato não reconhecido");
+    let novas = 0, atualizadas = 0;
+    for (const [k, v] of Object.entries(vindas)){
+      if (!v || !v.e) continue;
+      const atual = S.revisoes[k];
+      if (!atual){ S.revisoes[k] = v; novas++; }
+      else if (String(v.q || "") > String(atual.q || "")){ S.revisoes[k] = v; atualizadas++; }
+    }
+    await gravaRevisoes();
+    tudo();
+    toast(`${novas} conferência(s) adicionada(s)${atualizadas ? ", " + atualizadas + " atualizada(s)" : ""}.`);
+  }catch(e){
+    toast("Não foi possível ler o arquivo de conferências: " + msgErro(e));
+  }
+}
+
+/* ---------------- Carregamento ---------------- */
+function msgErro(e){
+  const n = e && e.name, m = (e && e.message) || "";
+  if (n === "NotAllowedError" || n === "SecurityError" || /not allowed|permission/i.test(m))
+    return "o navegador não liberou o acesso à pasta";
+  if (n === "NotFoundError" || /not found|no such/i.test(m))
+    return "a pasta ou o arquivo não está mais no mesmo lugar";
+  if (n === "NotReadableError" || /could not be read|locked/i.test(m))
+    return "o arquivo está aberto ou bloqueado por outro programa";
+  if (n === "AbortError") return "a operação foi cancelada";
+  return m || "erro desconhecido";
+}
+/* A permissão de leitura de pasta caduca (recarregar a página, reiniciar o navegador).
+   Renová-la exige um clique do usuário, por isso `gesto` só é verdadeiro quando a
+   chamada partiu de um botão. */
+async function garantePermissao(gesto){
+  if (!S.dirHandle) return false;
+  try{
+    if (await S.dirHandle.queryPermission({ mode:"read" }) === "granted"){ S.permPendente = false; return true; }
+    if (!gesto){ S.permPendente = true; return false; }
+    const r = await S.dirHandle.requestPermission({ mode:"read" });
+    S.permPendente = r !== "granted";
+    return !S.permPendente;
+  }catch(e){ S.permPendente = true; return false; }
+}
+
+const EXT = /\.(xlsx|xlsm|xls|csv)$/i;
+const TEMP = /^~\$|^\./;
+let carregando = false;
+
+async function percorrePasta(handle, prefixo = "", saida = []){
+  for await (const [nome, h] of handle.entries()){
+    if (h.kind === "directory") await percorrePasta(h, prefixo + nome + "/", saida);
+    else if (EXT.test(nome) && !TEMP.test(nome)) saida.push({ handle:h, caminho:prefixo + nome });
+  }
+  return saida;
+}
+async function escolhePasta(){
+  if (!window.showDirectoryPicker){ toast("Este navegador não permite abrir pastas. Use “Selecionar pasta (todos navegadores)”."); return; }
+  try{
+    const h = await window.showDirectoryPicker({ id:"pagamentos", mode:"read" });
+    S.dirHandle = h; S.permPendente = false; await idbSet("dir", h);
+    await carregaDaPasta(true, true);
+  }catch(e){
+    if (e.name === "AbortError") return;
+    if (e.name === "SecurityError" || e.name === "NotAllowedError")
+      toast("O navegador bloqueou o acesso direto à pasta. Use “Selecionar pasta (todos navegadores)”.");
+    else toast("Não foi possível abrir a pasta: " + msgErro(e));
+  }
+}
+async function carregaDaPasta(avisar, gesto){
+  if (!S.dirHandle || carregando) return false;
+  if (!(await garantePermissao(gesto))){
+    renderFonte();
+    return false;
+  }
+  carregando = true; statusFonte("Lendo arquivos da pasta…");
+  try{
+    const itens = await percorrePasta(S.dirHandle);
+    if (!itens.length){ statusFonte(""); toast("Nenhuma planilha encontrada na pasta."); carregando = false; return false; }
+    const arquivos = [], refs = [];
+    for (const it of itens){
+      const file = await it.handle.getFile();
+      refs.push({ file, caminho:it.caminho });
+      arquivos.push(await leArquivo(file, it.caminho));
+    }
+    S.arquivos = arquivos; S.filesRef = refs;
+    S.assinaturaPasta = refs.map(r => r.caminho + "|" + r.file.size + "|" + r.file.lastModified).join(";");
+    S.origemTipo = "pasta"; S.origemNome = S.dirHandle.name;
+    S.permPendente = false;
+    reconstroi(); tudo(); salvaCache();
+    if (avisar) toast(`${arquivos.length} arquivo(s) lidos · ${S.recs.length} pagamentos.`);
+    statusFonte(""); carregando = false;
+    return true;
+  }catch(e){
+    carregando = false;
+    if (e && (e.name === "NotAllowedError" || e.name === "SecurityError")){
+      S.permPendente = true; renderFonte(); statusFonte("");
+      toast("A permissão da pasta expirou. Clique em “Reconectar à pasta”.");
+      irPara("fonte");
+      return false;
+    }
+    statusFonte("");
+    toast("Falha ao ler a pasta: " + msgErro(e));
+    return false;
+  }
+}
+async function carregaArquivos(fileList){
+  const files = Array.from(fileList).filter(f => EXT.test(f.name) && !TEMP.test(f.name.split("/").pop()));
+  if (!files.length){ toast("Selecione arquivos .xlsx, .xlsm, .xls ou .csv."); return; }
+  carregando = true; statusFonte(`Lendo ${files.length} arquivo(s)…`);
+  const arquivos = [], refs = [];
+  for (const f of files){
+    const caminho = f.webkitRelativePath || f.name;
+    refs.push({ file:f, caminho });
+    try{ arquivos.push(await leArquivo(f, caminho)); }
+    catch(e){ S.avisos.push(`${f.name}: não foi possível abrir (${e.message}).`); }
+  }
+  S.arquivos = arquivos; S.filesRef = refs;
+  S.origemTipo = "arquivos"; S.origemNome = files.length === 1 ? files[0].name : files.length + " arquivos";
+  reconstroi(); tudo(); salvaCache();
+  toast(`${arquivos.length} arquivo(s) lidos · ${S.recs.length} pagamentos.`);
+  statusFonte(""); carregando = false;
+}
+async function releArquivos(){
+  if (!S.filesRef || !S.filesRef.length) return false;
+  const arquivos = [];
+  for (const r of S.filesRef){
+    try{ arquivos.push(await leArquivo(r.file, r.caminho)); }
+    catch(e){ return false; }
+  }
+  S.arquivos = arquivos; reconstroi(); tudo(); salvaCache(); return true;
+}
+async function atualizar(){
+  if (S.dirHandle){
+    if (await carregaDaPasta(true, true)) return;           // o clique renova a permissão
+    if (S.permPendente){                                     // permissão negada ou indisponível
+      if (S.filesRef && S.filesRef.length && await releArquivos()){
+        toast(`Atualizado pelos arquivos já abertos · ${S.recs.length} pagamentos.`);
+        return;
+      }
+      irPara("fonte");
+      toast("O navegador precisa que você escolha a pasta de novo.");
+    }
+    return;
+  }
+  if (S.filesRef && S.filesRef.length){
+    const ok = await releArquivos();
+    toast(ok ? `Atualizado · ${S.recs.length} pagamentos.`
+             : "Os arquivos mudaram de lugar. Selecione novamente.");
+    if (!ok) irPara("fonte");
+    return;
+  }
+  irPara("fonte");
+  toast(S.origemTipo === "cache"
+    ? "A cópia salva não guarda o caminho. Escolha a pasta para reler a planilha."
+    : "Escolha primeiro a pasta ou os arquivos.");
+}
+/* Verificação periódica: se a planilha for alimentada, o painel recarrega sozinho. */
+async function verificaMudancas(){
+  if (!S.dirHandle || carregando || document.hidden) return;
+  try{
+    const perm = await S.dirHandle.queryPermission({ mode:"read" });
+    if (perm !== "granted") return;
+    const itens = await percorrePasta(S.dirHandle);
+    const assinaturas = [];
+    for (const it of itens){ const f = await it.handle.getFile(); assinaturas.push(it.caminho + "|" + f.size + "|" + f.lastModified); }
+    const nova = assinaturas.join(";");
+    if (nova && nova !== S.assinaturaPasta){
+      await carregaDaPasta(false);
+      toast("Planilha alterada na rede — dados recarregados.");
+    }
+  }catch(e){}
+}
+async function reconectaPasta(){
+  const h = await idbGet("dir");
+  if (!h) return;
+  try{
+    S.dirHandle = h;
+    const perm = await h.queryPermission({ mode:"read" });
+    if (perm === "granted"){ await carregaDaPasta(false); }
+    else { S.permPendente = true; renderFonte(); statusFonte(""); }
+    return;
+  }catch(e){}
+}
+function statusFonte(txt){
+  const el = $("#foot-src");
+  if (txt){ el.textContent = txt; return; }
+  if (S.origemTipo === "cache") el.textContent = "Cópia salva: " + S.origemNome;
+  else if (S.origemTipo === "pasta") el.textContent = "Pasta: " + S.origemNome;
+  else if (S.origemTipo === "arquivos") el.textContent = S.origemNome;
+  else if (S.origemTipo === "embutido") el.textContent = "dados.js (gerado pelo script Python)";
+  else el.textContent = "Abra “Fonte de dados”";
+}
+
+/* ---------------- Navegação ---------------- */
+function irPara(v){
+  S.view = v;
+  $$(".tab").forEach(b => b.setAttribute("aria-current", b.dataset.view === v ? "page" : "false"));
+  ["valores","frequencia","status","fonte"].forEach(id => { $("#view-" + id).hidden = id !== v; });
+  const titulos = {
+    valores:    ["Valores por dia", "Quanto foi pago em cada dia da semana"],
+    frequencia: ["Frequência", "Quantas vezes cada empresa recebeu"],
+    status:     ["Status", "Quem passou do limite de alerta"],
+    fonte:      ["Fonte de dados", "Planilhas, colunas e atualização"]
+  }[v];
+  $("#top-title-txt").textContent = titulos[0];
+  $("#top-title-sub").textContent = titulos[1];
+  salvaFiltros(); render();
+}
+
+/* ---------------- Filtros na barra superior ---------------- */
+function renderFiltros(){
+  const o = opcoes(), f = S.filtros;
+  /* Sem dados carregados ainda (a cópia salva chega um instante depois), as listas
+     estão vazias. Nesse momento os valores guardados são apenas exibidos, nunca
+     sobrescritos — do contrário o mês e a semana escolhidos se perderiam a cada
+     abertura do painel. */
+  const temDados = S.recs.length > 0;
+  const sel = (el, itens, valor, rotulo0) => {
+    const existe = itens.some(i => String(i.v) === String(valor));
+    el.innerHTML = `<option value="${rotulo0.v}">${rotulo0.t}</option>` +
+      itens.map(i => `<option value="${i.v}">${esc(i.t)}</option>`).join("") +
+      (!existe && !temDados && String(valor) !== String(rotulo0.v)
+        ? `<option value="${esc(valor)}">…</option>` : "");
+    el.value = existe || !temDados ? valor : rotulo0.v;
+    return el.value;
+  };
+  const ano = sel($("#f-ano"), o.anos.map(a => ({v:a,t:a})), f.ano, {v:"todos",t:"Todos"});
+  const mes = sel($("#f-mes"), o.meses.map(m => ({v:m,t:MESES[m]})), f.mes, {v:"todos",t:"Todos"});
+  const sem = sel($("#f-semana"), o.semanas.map(s => ({v:s,t:SEMANA_NOME[s-1] || "Semana " + s})), f.semana, {v:"todas",t:"Todas"});
+  if (temDados){ f.ano = ano; f.mes = mes; f.semana = sem; }
+  menuMulti($("#dep-menu"), $("#dep-count"), o.deps, f.deps);
+  menuMulti($("#banco-menu"), $("#banco-count"), o.bancos, f.bancos);
+  menuMulti($("#nat-menu"), $("#nat-count"), o.naturezas, f.naturezas);
+
+  const temFav = !!S.rotulos.favorecido && S.recs.some(r => r.favorecido);
+  $("#grupo-field").hidden = !temFav;
+  if (temFav){
+    $("#f-grupo").innerHTML = `<option value="empresa">${esc(S.rotulos.empresa)}</option>` +
+      `<option value="favorecido">${esc(S.rotulos.favorecido)}</option>`;
+    $("#f-grupo").value = f.grupo;
+  } else if (f.grupo === "favorecido" && S.recs.length){ f.grupo = "empresa"; }
+  $("#f-busca").placeholder = "Filtrar " + rotuloGrupo().toLowerCase();
+  $("#btn-limpar").hidden = !filtrosAtivos();
+}
+function menuMulti(menu, contador, itens, conjunto){
+  if (S.recs.length) [...conjunto].forEach(v => { if (!itens.includes(v)) conjunto.delete(v); });
+  menu.innerHTML = (itens.length ? itens.map(i =>
+      `<label><input type="checkbox" value="${esc(i)}" ${conjunto.has(i) ? "checked" : ""}>${esc(i)}</label>`).join("")
+    : `<label style="color:var(--on-surface-variant)">Sem dados carregados</label>`) +
+    `<div class="acts"><button class="btn" data-all="1">Todos</button><button class="btn" data-none="1">Limpar</button></div>`;
+  contador.textContent = conjunto.size ? conjunto.size : "Todos";
+  contador.style.minWidth = conjunto.size ? "20px" : "auto";
+}
+
+function filtrosAtivos(){
+  const f = S.filtros;
+  return !!(f.deps.size || f.naturezas.size || f.bancos.size || f.busca ||
+            f.mes !== "todos" || f.semana !== "todas" || f.freq !== "todos" || f.st !== "todos");
+}
+function limpaFiltros(){
+  const f = S.filtros;
+  f.mes = "todos"; f.semana = "todas"; f.busca = ""; f.freq = "todos"; f.st = "todos";
+  f.deps.clear(); f.naturezas.clear(); f.bancos.clear();
+  $("#f-busca").value = "";
+  renderFiltros(); render(); salvaFiltros();
+  toast("Filtros limpos. Ano mantido em " + (f.ano === "todos" ? "todos" : f.ano) + ".");
+}
+
+/* ---------------- Renderização ---------------- */
+function tudo(){ renderFiltros(); render(); renderFonte(); statusFonte(); }
+
+function render(){
+  const total = S.recs.length;
+  $("#btn-limpar").hidden = !filtrosAtivos();
+  $("#foot-count").textContent = total ? `${total.toLocaleString("pt-BR")} pagamentos` : "Nenhum dado carregado";
+  $("#foot-dot").classList.toggle("on", !!total);
+  if (!S.ultimaLeitura) $("#foot-time").textContent = "—";
+  else {
+    const hj = new Date(), d = S.ultimaLeitura;
+    const mesmoDia = d.toDateString() === hj.toDateString();
+    const hora = d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    $("#foot-time").textContent = mesmoDia ? "Atualizado às " + hora
+      : "Lido em " + d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}) + " às " + hora;
+  }
+  if (S.view === "valores") renderValores();
+  if (S.view === "frequencia") renderFrequencia();
+  if (S.view === "status") renderStatus();
+  if (S.view === "fonte") renderFonte();
+}
+function vazio(msg, titulo){
+  return `<div class="blank"><div class="mark">${svg("i-vazio")}</div>
+    <h3>${esc(titulo || "Nada para mostrar")}</h3><p style="max-width:70ch;margin:0 auto">${msg}</p></div>`;
+}
+function avisos(){
+  if (!S.avisos.length) return "";
+  return `<div class="warnbox">${svg("i-alert")}<div><b>Verifique estes arquivos</b>
+    <ul>${S.avisos.slice(0,6).map(a => `<li>${esc(a)}</li>`).join("")}</ul></div></div>`;
+}
+function kpi(rotulo, valor, nota, alerta, hero){
+  return `<div class="kpi ${hero ? "hero" : ""} ${alerta ? "alert" : ""}">
+    ${hero ? '<span class="orb"></span>' : ""}
+    <span>${esc(rotulo)}</span><strong>${valor}</strong>${nota ? `<small>${esc(nota)}</small>` : ""}</div>`;
+}
+/* Conferência da empresa que ficou em alerta no período, com o resumo dos
+   pagamentos que, isoladamente, também passaram do limite (quando houver). */
+function celulaConferenciaEmpresa(e, lim, alerta){
+  if (!alerta) return '<span class="sub" style="margin:0">—</span>';
+  const est = estadoEmpresa(e);
+  const atual = est.estado;
+  const acima = e.recs.filter(r => r.valor > lim);
+  let detalhe = "";
+  if (acima.length){
+    const ok = acima.filter(r => estadoRevisao(r) === "ok").length;
+    const ver = acima.filter(r => estadoRevisao(r) === "ver").length;
+    detalhe = `${acima.length} pagamento${acima.length > 1 ? "s" : ""} acima do limite`
+      + (ok ? ` · ${ok} autorizado${ok > 1 ? "s" : ""}` : "")
+      + (ver ? ` · ${ver} a verificar` : "");
+  }
+  return `<div class="conf">
+    <select class="conf-sel" data-rev-emp="${esc(e.empresa)}" data-estado="${atual}"
+      title="Conferência desta empresa em ${esc(rotuloPeriodo())}${
+        est.total > 1 ? " — aplica-se às " + est.total + " semanas do recorte" : ""}">
+      ${ESTADOS_CONF.map(o => `<option value="${o.v}" ${o.v === atual ? "selected" : ""}>${o.t}</option>`).join("")}
+    </select>
+    ${est.ultima ? `<span class="sub">${esc(quandoRev(est.ultima))}</span>` : ""}
+    ${est.total > 1 ? `<span class="sub">${
+        est.parcial ? `${est.ok} de ${est.total} semanas conferidas`
+                    : `vale para ${est.total} semanas do recorte`}</span>` : ""}
+    ${detalhe ? `<span class="sub">${detalhe}</span>` : ""}
+  </div>`;
+}
+const ESTADOS_CONF = [
+  { v:"",    t:"Pendente" },
+  { v:"ok",  t:"Autorizado" },
+  { v:"ver", t:"Verificar com o departamento" }
+];
+function celulaConferencia(r, rev){
+  const atual = (rev && rev.e) || "";
+  return `<div class="conf">
+    <select class="conf-sel" data-rev="${esc(r.chaveRev)}" data-estado="${atual}"
+      title="Situação da conferência deste pagamento">
+      ${ESTADOS_CONF.map(o => `<option value="${o.v}" ${o.v === atual ? "selected" : ""}>${o.t}</option>`).join("")}
+    </select>
+    ${rev ? `<span class="sub">${esc(quandoRev(rev))}</span>` : ""}
+  </div>`;
+}
+function chipStatus(alerta){
+  return alerta
+    ? `<span class="st al"><span class="mk">${svg("i-aviso")}</span>Alerta</span>`
+    : `<span class="st ok"><span class="mk"><i></i></span>Normal</span>`;
+}
+const hoje = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); };
+
+/* ----- Página 1: valores por dia ----- */
+let ultimaTabela = { valores:[], frequencia:[], status:[] };
+
+function renderValores(){
+  const recs = filtra();
+  const emp = porEmpresa(recs);
+  const temFds = recs.some(r => r.dia > 4);
+  const cols = [0,1,2,3,4].concat(temFds ? [5] : []);
+  const rotCol = i => i < 5 ? DIAS[i] : "Fim de semana";
+  $("#valores-periodo").textContent = rotuloPeriodo();
+  $("#valores-sub").textContent = `Montante pago por ${rotuloGrupo().toLowerCase()}, de segunda a sexta-feira.`
+    + (S.filtros.bancos.size ? ` Filtrado por ${S.filtros.bancos.size} banco(s).` : "");
+
+  const total = recs.reduce((s,r) => s + r.valor, 0);
+  const porDia = cols.map(i => recs.filter(r => (i === 5 ? r.dia > 4 : r.dia === i)).reduce((s,r) => s + r.valor, 0));
+  const maiorDia = porDia.length ? Math.max(...porDia) : 0;
+  const iMaior = porDia.indexOf(maiorDia);
+  $("#valores-kpis").innerHTML = recs.length ? [
+    kpi("Total pago no período", brl(total),
+        variacao(total, totalSemanaAnterior()) || rotuloPeriodo(), false, true),
+    kpi("Pagamentos", recs.length.toLocaleString("pt-BR")),
+    kpi(rotuloGrupo() + "s pagos", emp.length.toLocaleString("pt-BR")),
+    kpi("Valor médio", brl(recs.length ? total / recs.length : 0)),
+    kpi("Dia de maior volume", maiorDia ? rotCol(cols[iMaior]) : "—", maiorDia ? brlCurto(maiorDia) : "")
+  ].join("") : "";
+
+  if (!S.recs.length){ $("#valores-tabela").innerHTML = vazio("Escolha a pasta da rede ou arraste as planilhas na aba Fonte de dados.", "Sem planilha carregada"); $("#valores-foot").textContent = ""; return; }
+  if (!recs.length){ $("#valores-tabela").innerHTML = vazio("Nenhum pagamento no período e nos filtros selecionados. Amplie a semana ou limpe os filtros.", "Nada neste recorte"); $("#valores-foot").textContent = ""; return; }
+
+  const maiorCel = Math.max(...emp.map(e => e.total));
+  const linhas = emp.map(e => {
+    const cel = cols.map(i => {
+      const v = i === 5 ? e.dias[5] + e.dias[6] : e.dias[i];
+      const q = i === 5 ? e.qtdDias[5] + e.qtdDias[6] : e.qtdDias[i];
+      if (!v) return `<td class="r zero">—</td>`;
+      return `<td class="r"><span class="num">${fmtN.format(v)}</span>${q > 1 ? `<span class="sub">${q} pagamentos</span>` : ""}</td>`;
+    }).join("");
+    return `<tr>
+      <td class="co">${esc(e.empresa)}<span class="sub">${esc([...e.nats].slice(0,2).join(" · "))}${e.nats.size > 2 ? " +" + (e.nats.size-2) : ""}</span></td>
+      ${cel}
+      <td class="r"><span class="num">${fmtN.format(e.total)}</span>
+        <div class="bar" style="margin-top:6px"><i style="width:${Math.max(2, e.total/maiorCel*100)}%"></i></div></td>
+      <td class="c num">${e.qtd}</td></tr>`;
+  }).join("");
+  const rodape = cols.map((i,k) => `<td class="r num">${porDia[k] ? fmtN.format(porDia[k]) : "—"}</td>`).join("");
+
+  $("#valores-tabela").innerHTML = avisos() + `<table>
+    <thead><tr><th>${esc(rotuloGrupo())}</th>${cols.map(i => `<th class="r">${rotCol(i)}</th>`).join("")}
+      <th class="r">Total da semana</th><th class="c">Qtd.</th></tr></thead>
+    <tbody>${linhas}</tbody>
+    <tfoot><tr><td>Total geral</td>${rodape}<td class="r num">${fmtN.format(total)}</td><td class="c num">${recs.length}</td></tr></tfoot>
+  </table>`;
+  $("#valores-foot").textContent = `${emp.length} × ${rotuloGrupo().toLowerCase()} · ${recs.length} pagamento(s) · ${rotuloPeriodo()}`;
+
+  ultimaTabela.valores = [[rotuloGrupo(), ...cols.map(rotCol), "Total", "Qtd"]]
+    .concat(emp.map(e => [e.empresa, ...cols.map(i => i === 5 ? e.dias[5]+e.dias[6] : e.dias[i]), e.total, e.qtd]))
+    .concat([["Total geral", ...porDia, total, recs.length]]);
+}
+
+/* ----- Página 2: frequência ----- */
+function renderFrequencia(){
+  const f = S.filtros;
+  let emp = porEmpresa(filtra());
+  if (f.freq === "1") emp = emp.filter(e => e.qtd === 1);
+  if (f.freq === "2") emp = emp.filter(e => e.qtd > 1);
+  $("#freq-periodo").textContent = rotuloPeriodo();
+  $$("#freq-pills .pill").forEach(b => b.setAttribute("aria-pressed", b.dataset.freq === f.freq));
+
+  const todas = porEmpresa(filtra());
+  const multi = todas.filter(e => e.qtd > 1);
+  const qtdTotal = todas.reduce((s,e) => s + e.qtd, 0);
+  $("#freq-kpis").innerHTML = todas.length ? [
+    kpi("Pagamentos no período", qtdTotal.toLocaleString("pt-BR"), rotuloPeriodo(), false, true),
+    kpi("Com 1 pagamento", (todas.length - multi.length).toLocaleString("pt-BR"), rotuloGrupo().toLowerCase()),
+    kpi("Com mais de 1 pagamento", multi.length.toLocaleString("pt-BR"),
+        multi.length ? "recorrência a revisar" : "", multi.length > 0),
+    kpi("Média de pagamentos", todas.length ? (qtdTotal/todas.length).toFixed(1).replace(".",",") : "0")
+  ].join("") : "";
+
+  if (!S.recs.length){ $("#freq-tabela").innerHTML = vazio("Escolha a pasta da rede ou arraste as planilhas na aba Fonte de dados.", "Sem planilha carregada"); $("#freq-foot").textContent = ""; return; }
+  if (!emp.length){ $("#freq-tabela").innerHTML = vazio("Nenhuma empresa atende a esse recorte de recorrência no período.", "Nada neste recorte"); $("#freq-foot").textContent = ""; return; }
+
+  const linhas = emp.map(e => {
+    const aberto = S.abertos.has(e.empresa);
+    const filhos = aberto ? e.recs.map(r => `<tr class="child">
+        <td>${svg("i-arrow","ico-sm")} ${esc(r.natureza)}${r.desc ? `<span class="sub">${esc(r.desc)}</span>` : ""}</td>
+        <td>${dataBR(r.data)}<span class="sub">${DIAS[r.dia] || "Fim de semana"}</span></td>
+        <td>${contraparte(r) ? esc(contraparte(r)) + `<span class="sub">${esc(r.depto)}</span>` : esc(r.depto)}</td>
+        <td class="r num">${fmtN.format(r.valor)}</td>
+        <td class="c">${esc(r.banco)}</td></tr>`).join("") : "";
+    return `<tr class="group ${aberto ? "open" : ""}" data-emp="${esc(e.empresa)}" tabindex="0">
+        <td class="co"><span style="display:inline-flex;align-items:center;gap:10px">
+          ${svg("i-chev","chev")}${esc(e.empresa)}</span></td>
+        <td><span class="badge ${e.qtd > 1 ? "multi" : "single"}">${e.qtd > 1 ? "Múltiplo" : "Único"}</span></td>
+        <td class="num">${e.qtd} ${e.qtd > 1 ? "transações" : "transação"}</td>
+        <td class="r num">${fmtN.format(e.total)}</td>
+        <td class="c">${esc([...e.bancos].join(", "))}</td></tr>${filhos}`;
+  }).join("");
+
+  $("#freq-tabela").innerHTML = avisos() + `<table>
+    <thead><tr><th>${esc(rotuloGrupo())}</th><th>Recorrência</th><th>Qtd. pagamentos</th>
+      <th class="r">Volume total (R$)</th><th class="c">Banco</th></tr></thead>
+    <tbody>${linhas}</tbody></table>`;
+  $("#freq-foot").textContent = `${emp.length} × ${rotuloGrupo().toLowerCase()} · ${emp.reduce((s,e)=>s+e.qtd,0)} pagamento(s)`;
+
+  ultimaTabela.frequencia = [[rotuloGrupo(),"Recorrencia","Qtd pagamentos","Volume total","Bancos"]]
+    .concat(emp.map(e => [e.empresa, e.qtd > 1 ? "Múltiplo" : "Único", e.qtd, e.total, [...e.bancos].join(" / ")]));
+}
+
+/* ----- Página 3: status ----- */
+function renderStatus(){
+  const f = S.filtros, lim = +f.limite || 0, porPagamento = S.statusVisao === "pagamento";
+  const recs = filtra();
+  $("#status-periodo").textContent = rotuloPeriodo();
+  $$("#status-pills .pill").forEach(b => b.setAttribute("aria-pressed", b.dataset.st === f.st));
+  $$("#status-visao .pill").forEach(b => b.setAttribute("aria-pressed", b.dataset.visao === S.statusVisao));
+  $("#f-conf").value = f.conf;
+  $("#f-conf").parentElement.hidden = false;
+  $("#status-titulo").textContent = porPagamento ? "Pagamentos da semana" : "Situação por empresa";
+
+  const todas = porEmpresa(recs);
+  const total = recs.reduce((s,r) => s + r.valor, 0);
+  const emAlerta = todas.filter(e => e.total > lim);
+  const alertaGeral = total > lim;
+  $("#status-kpis").innerHTML = recs.length ? [
+    kpi("Pagamentos da semana", recs.length.toLocaleString("pt-BR"), rotuloPeriodo(), false, true),
+    kpi("Total da semana", brl(total), `${todas.length} × ${rotuloGrupo().toLowerCase()}`),
+    kpi("Status do período", alertaGeral ? "Alerta" : "Normal", `Limite de ${brl(lim)}`, alertaGeral),
+    kpi("Acima do limite", emAlerta.length.toLocaleString("pt-BR"),
+        emAlerta.length ? brlCurto(emAlerta.reduce((s,e)=>s+e.total,0)) + " concentrados" : "nenhum caso",
+        emAlerta.length > 0),
+    (() => {
+      if (porPagamento){
+        const acima = recs.filter(r => r.valor > lim);
+        const pend = acima.filter(r => !estadoRevisao(r)).length;
+        const ver = acima.filter(r => estadoRevisao(r) === "ver").length;
+        const nota = acima.length
+          ? `de ${acima.length} pagamento(s) acima do limite${ver ? " · " + ver + " a verificar" : ""}`
+          : "nenhum pagamento acima do limite";
+        return kpi("Conferência pendente", pend.toLocaleString("pt-BR"), nota, pend > 0 || ver > 0);
+      }
+      const pend = emAlerta.filter(e => !estadoEmpresa(e).estado).length;
+      const ver = emAlerta.filter(e => estadoEmpresa(e).estado === "ver").length;
+      const nota = emAlerta.length
+        ? `de ${emAlerta.length} em alerta${ver ? " · " + ver + " a verificar" : ""}`
+        : "nada em alerta no período";
+      return kpi("Conferência pendente", pend.toLocaleString("pt-BR"), nota, pend > 0 || ver > 0);
+    })()
+  ].join("") : "";
+
+  const semDados = !S.recs.length;
+  const limpa = msg => { $("#status-tabela").innerHTML = msg; $("#status-foot").textContent = ""; $("#status-pag").hidden = true; };
+  if (semDados) return limpa(vazio("Escolha a pasta da rede ou arraste as planilhas na aba Fonte de dados.", "Sem planilha carregada"));
+
+  /* ---- visão por pagamento: uma linha por lançamento ---- */
+  if (porPagamento){
+    let lista = recs.map(r => ({ r, alerta:r.valor > lim, rev:revisaoDe(r) }));
+    if (f.st === "acima") lista = lista.filter(x => x.alerta);
+    if (f.st === "abaixo") lista = lista.filter(x => !x.alerta);
+    if (f.conf === "pendentes") lista = lista.filter(x => x.alerta && !x.rev);
+    if (f.conf === "autorizados") lista = lista.filter(x => x.rev && x.rev.e === "ok");
+    if (f.conf === "verificar") lista = lista.filter(x => x.rev && x.rev.e === "ver");
+    lista.sort((a,b) => b.r.data - a.r.data || b.r.valor - a.r.valor);
+    if (!lista.length){
+      const maior = recs.reduce((m,r) => r.valor > (m ? m.valor : -1) ? r : m, null);
+      const partes = [];
+      if (f.st === "acima" && maior)
+        partes.push(`Nenhum pagamento <b>individual</b> passou de ${brl(lim)} neste recorte.
+          O maior foi ${brl(maior.valor)}, de ${esc(chaveGrupo(maior))} em ${dataBR(maior.data)}.
+          Na visão <b>Por empresa</b> o alerta compara o <b>total da semana</b>, por isso lá podem
+          aparecer empresas em alerta mesmo sem nenhum pagamento isolado acima do limite.`);
+      else if (f.conf !== "todas")
+        partes.push(`Nenhum pagamento com a conferência em <b>${
+          { pendentes:"pendente", autorizados:"autorizado", verificar:"a verificar" }[f.conf]
+        }</b> neste recorte. Troque o filtro <b>Conferência</b> para <b>Todas</b>.`);
+      else
+        partes.push("Nenhum pagamento nessa faixa de valor. Ajuste o limite ou troque o filtro.");
+      if (f.busca) partes.push(`O filtro de nome está ativo em <b>${esc(f.busca)}</b>.`);
+      if (!recs.length) partes.push("Não há pagamento algum no período selecionado.");
+      return limpa(vazio(partes.join(" "), "Nada neste recorte"));
+    }
+
+    const PORPAG = 50, paginas = Math.ceil(lista.length / PORPAG);
+    if (S.pag > paginas) S.pag = 1;
+    const de = (S.pag - 1) * PORPAG, ate = Math.min(de + PORPAG, lista.length);
+    const hj = hoje();
+
+    const linhas = lista.slice(de, ate).map(({r, alerta, rev}) => `<tr class="${alerta ? "alerta" : ""} ${rev ? "conf-" + rev.e : ""}">
+      <td>${chipStatus(alerta)}</td>
+      <td class="${r.data.getTime() === hj ? "hoje" : ""}">${r.data.getTime() === hj ? "Hoje" : dataBR(r.data)}
+        <span class="sub">${DIAS[r.dia] || "Fim de semana"}</span></td>
+      <td class="co">${esc(chaveGrupo(r))}${contraparte(r) ? `<span class="sub">${esc(contraparte(r))}</span>` : ""}</td>
+      <td>${esc(r.natureza)}<span class="sub">${esc(r.depto)}</span></td>
+      <td>${esc(r.banco)}</td>
+      <td class="r num" style="${alerta ? "font-weight:700" : ""}">${fmtN.format(r.valor)}</td>
+      <td>${alerta ? celulaConferencia(r, rev) : '<span class="sub" style="margin:0">Dentro do limite</span>'}</td>
+      <td class="c"><button class="acao" data-emp="${esc(chaveGrupo(r))}">Ver empresa</button></td></tr>`).join("");
+
+    $("#status-tabela").innerHTML = avisos() + `<table>
+      <thead><tr><th>Status</th><th>Data</th><th>${esc(rotuloGrupo())}</th>
+        <th>Natureza / departamento</th><th>Banco</th><th class="r">Valor (R$)</th>
+        <th>Conferência</th><th class="c">Ação</th></tr></thead>
+      <tbody>${linhas}</tbody>
+      <tfoot><tr><td colspan="5">Total do recorte</td>
+        <td class="r num">${fmtN.format(lista.reduce((s,x)=>s+x.r.valor,0))}</td><td colspan="2"></td></tr></tfoot>
+    </table>`;
+    $("#status-foot").textContent = `Mostrando ${de+1} a ${ate} de ${lista.length.toLocaleString("pt-BR")} pagamentos · limite em ${brl(lim)}`
+      + (f.busca ? ` · filtrado por “${f.busca}”` : "");
+    $("#status-pag").hidden = paginas < 2;
+    $("#pag-ant").disabled = S.pag <= 1;
+    $("#pag-prox").disabled = S.pag >= paginas;
+
+    ultimaTabela.status = [["Status","Data","Dia",rotuloGrupo(),"Natureza","Departamento","Banco","Valor",
+        "Conferencia","Responsavel","Marcado em"]]
+      .concat(lista.map(({r,alerta,rev}) => [alerta ? "Alerta" : "Normal",
+        r.data.toLocaleDateString("pt-BR"), DIAS[r.dia] || "Fim de semana",
+        chaveGrupo(r), r.natureza, r.depto, r.banco, r.valor,
+        !alerta ? "Dentro do limite" : rev ? (rev.e === "ok" ? "Autorizado" : "Verificar com o departamento") : "Pendente",
+        rev ? rev.n : "", rev ? new Date(rev.q).toLocaleString("pt-BR") : ""]));
+    return;
+  }
+
+  /* ---- visão por empresa: agregado da semana ---- */
+  let emp = porEmpresa(recs);
+  if (f.st === "acima") emp = emp.filter(e => e.total > lim);
+  if (f.st === "abaixo") emp = emp.filter(e => e.total <= lim);
+  if (f.conf !== "todas"){
+    const alvo = { pendentes:"", autorizados:"ok", verificar:"ver" }[f.conf];
+    emp = emp.filter(e => {
+      if (e.total <= lim) return false;                       // só quem está em alerta
+      return estadoEmpresa(e).estado === alvo;
+    });
+  }
+  if (!emp.length){
+    const partes = [];
+    if (f.conf !== "todas")
+      partes.push(`Nenhuma empresa em alerta com a conferência em <b>${
+        { pendentes:"pendente", autorizados:"autorizada", verificar:"a verificar" }[f.conf]
+      }</b> neste recorte.`);
+    else partes.push("Nenhuma empresa nessa faixa de valor. Ajuste o limite ou troque o filtro.");
+    if (f.busca) partes.push(`O filtro de nome está ativo em <b>${esc(f.busca)}</b>.`);
+    return limpa(vazio(partes.join(" "), "Nada neste recorte"));
+  }
+
+  const linhas = emp.map(e => {
+    const alerta = e.total > lim;
+    const estE = alerta ? estadoEmpresa(e).estado : "";
+    return `<tr class="${alerta ? "alerta" : ""} ${estE ? "conf-" + estE : ""}">
+      <td>${chipStatus(alerta)}</td>
+      <td class="co">${esc(e.empresa)}<span class="sub">${esc([...e.bancos].join(", "))}</span></td>
+      <td class="num">${e.qtd}</td>
+      <td class="r num" style="${alerta ? "font-weight:700" : ""}">${fmtN.format(e.total)}</td>
+      <td class="r num">${fmtN.format(e.total / e.qtd)}</td>
+      <td>${esc([...e.deps].join(", "))}<span class="sub">${esc([...e.nats].slice(0,2).join(" · "))}</span></td>
+      <td>${celulaConferenciaEmpresa(e, lim, alerta)}</td>
+      <td class="c"><button class="acao" data-emp="${esc(e.empresa)}">Ver pagamentos</button></td></tr>`;
+  }).join("");
+
+  $("#status-tabela").innerHTML = avisos() + `<table>
+    <thead><tr><th>Status</th><th>${esc(rotuloGrupo())}</th><th>Qtd.</th>
+      <th class="r">Total da semana (R$)</th><th class="r">Valor médio</th>
+      <th>Departamento / natureza</th><th>Conferência</th><th class="c">Ação</th></tr></thead>
+    <tbody>${linhas}</tbody>
+    <tfoot><tr><td colspan="2">Total geral</td><td class="num">${emp.reduce((s,e)=>s+e.qtd,0)}</td>
+      <td class="r num">${fmtN.format(emp.reduce((s,e)=>s+e.total,0))}</td><td colspan="4"></td></tr></tfoot>
+  </table>`;
+  const pendEmp = emAlerta.filter(e => !estadoEmpresa(e).estado).length;
+  $("#status-foot").textContent = `${emp.length} × ${rotuloGrupo().toLowerCase()} · limite de alerta em ${brl(lim)}`
+    + (emAlerta.length ? ` · ${emAlerta.length - pendEmp} de ${emAlerta.length} em alerta conferida(s)` : "")
+    + (f.busca ? ` · filtrado por “${f.busca}”` : "");
+  $("#status-pag").hidden = true;
+
+  const rotuloConf = { "":"Pendente", ok:"Autorizado", ver:"Verificar com o departamento" };
+  ultimaTabela.status = [["Status",rotuloGrupo(),"Qtd pagamentos","Total semana","Valor medio",
+      "Departamentos","Naturezas","Conferencia","Responsavel","Marcado em",
+      "Pagamentos acima do limite","Autorizados","A verificar"]]
+    .concat(emp.map(e => {
+      const alerta = e.total > lim;
+      const est = alerta ? estadoEmpresa(e) : null;
+      const rev = est && est.ultima;
+      const acima = e.recs.filter(r => r.valor > lim);
+      return [alerta ? "Alerta" : "Normal", e.empresa, e.qtd, e.total, e.total/e.qtd,
+        [...e.deps].join(" / "), [...e.nats].join(" / "),
+        alerta ? (est.parcial ? `Parcial (${est.ok} de ${est.total} semanas)` : rotuloConf[est.estado]) : "",
+        rev ? rev.n : "", rev ? new Date(rev.q).toLocaleString("pt-BR") : "",
+        acima.length, acima.filter(r => estadoRevisao(r) === "ok").length,
+        acima.filter(r => estadoRevisao(r) === "ver").length];
+    }));
+}
+
+/* ----- Página 4: fonte de dados ----- */
+function renderFonte(){
+  const fs = !!window.showDirectoryPicker;
+  $("#btn-dir").disabled = !fs;
+  const pend = S.permPendente && S.dirHandle;
+  $("#btn-dir").innerHTML = svg("i-folder") +
+    (pend ? "Reconectar à pasta “" + esc(S.dirHandle.name) + "”" : "Selecionar pasta da rede");
+  $("#auto-hint").classList.toggle("aviso", !!pend);
+  if (pend){
+    $("#auto-hint-text").innerHTML = `<b>A pasta precisa ser liberada de novo.</b>
+      O navegador guarda o caminho <b>${esc(S.dirHandle.name)}</b>, mas só devolve a leitura
+      depois de um clique seu — é o que acontece quando a página é recarregada ou o navegador
+      é reaberto. Clique em <b>Reconectar à pasta</b> acima e confirme em “Ver arquivos”.`;
+    return;
+  }
+  $("#auto-hint-text").innerHTML = fs
+    ? `<b>Atualização automática.</b> Ao escolher a pasta da rede em <b>Selecionar pasta da rede</b>, o painel confere a cada minuto se as planilhas mudaram e recarrega sozinho enquanto a aba estiver aberta. O botão <b>Atualizar</b> força a leitura na hora.`
+    : `<b>Atualização manual.</b> Neste navegador a pasta não fica memorizada — use <b>Selecionar pasta (todos navegadores)</b> e depois <b>Atualizar</b> após alimentar a planilha. No Edge ou Chrome a atualização automática funciona.`;
+
+  $("#btn-esquecer").hidden = !(S.cacheSalvo || S.recs.length);
+  $("#f-usuario").value = S.usuario;
+  atualizaEstadoRev();
+  const nRev = totalRevisoes();
+  $("#btn-limpar-rev").hidden = !nRev;
+  $("#btn-limpar-rev").innerHTML = svg("i-close") + `Limpar conferências (${nRev})`;
+  $("#btn-salvar-rev").disabled = !nRev;
+  const cacheEl = $("#cache-info");
+  if (S.cacheGrande){
+    cacheEl.className = "hint aviso";
+    cacheEl.innerHTML = svg("i-alert","ico-sm") + `<div><b>Base grande para guardar no navegador.</b>
+      Os dados foram carregados, mas não couberam na cópia local, então na próxima abertura
+      será preciso ler a planilha de novo. Para esse volume, o caminho estável é o
+      <code>consolidar.py</code> gerando o <code>dados.js</code> na pasta.</div>`;
+  } else if (S.cacheSalvo && S.cacheQuando){
+    const d = new Date(S.cacheQuando);
+    cacheEl.className = "hint";
+    cacheEl.innerHTML = svg("i-check","ico-sm") + `<div><b>Cópia salva neste computador.</b>
+      ${S.recs.length.toLocaleString("pt-BR")} pagamentos da leitura de
+      ${d.toLocaleDateString("pt-BR")} às ${d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}.
+      Ao abrir o painel, esses dados aparecem na hora; <b>Atualizar</b> relê a planilha.
+      ${S.origemTipo === "cache" ? "Origem anterior: " + esc(S.origemNome) + "." : ""}</div>`;
+  } else if (!LS.ok && !S.cacheSalvo){
+    cacheEl.className = "hint aviso";
+    cacheEl.innerHTML = svg("i-alert","ico-sm") + `<div><b>Este navegador não permite guardar dados.</b>
+      O painel funciona normalmente, mas será preciso escolher a planilha a cada abertura.
+      Alternativas: abrir o arquivo por um caminho de rede mapeado (Z:\\…) em vez de
+      <code>\\\\servidor-exemplo\\…</code>, ou usar o <code>consolidar.py</code> para gerar o
+      <code>dados.js</code>.</div>`;
+  } else {
+    cacheEl.className = "hint";
+    cacheEl.innerHTML = svg("i-info","ico-sm") + `<div>Depois da primeira leitura, os dados ficam
+      guardados neste computador e o painel abre preenchido nas próximas vezes.</div>`;
+  }
+
+  const lista = $("#filelist");
+  if (!S.arquivos.length){
+    lista.innerHTML = `<li><span class="meta">Nenhum arquivo carregado ainda.</span></li>`;
+  } else {
+    lista.innerHTML = S.arquivos.map(a => {
+      const regs = a.abas.reduce((s,ab) => s + (ab.registros || 0), 0);
+      const problemas = a.abas.filter(ab => !ab.ok || !ab.registros);
+      return `<li>${svg("i-file")}
+        <span class="name">${esc(a.caminho)}<span class="sub">${a.abas.length} aba(s)${a.anoNome ? " · ano " + a.anoNome : ""}${problemas.length ? " · " + problemas.length + " aba(s) sem dados" : ""}</span></span>
+        <span class="meta">${regs.toLocaleString("pt-BR")} pagamentos</span>
+        <span class="meta">${a.mtime ? a.mtime.toLocaleString("pt-BR") : ""}</span></li>`;
+    }).join("");
+  }
+  $("#schema-tabela").innerHTML = `<table><thead><tr><th>Coluna esperada</th><th>Obrigatória</th><th>Nomes reconhecidos automaticamente</th></tr></thead><tbody>
+    ${CAMPO_IDS.map(id => `<tr><td class="co">${CAMPOS[id].rotulo}</td>
+      <td>${CAMPOS[id].obrig ? '<span class="badge multi">Sim</span>' : '<span class="badge single">Opcional</span>'}</td>
+      <td>${CAMPOS[id].chaves.slice(0,6).join(", ")}…</td></tr>`).join("")}
+  </tbody></table>`;
+}
+
+/* ---------------- Modal de mapeamento ---------------- */
+function abreMapa(){
+  const body = $("#map-body");
+  if (!S.cruas.size){
+    body.innerHTML = S.recs.length
+      ? `<p>Estes dados vieram da cópia salva, que não guarda o formato original da planilha.
+         Clique em <b>Atualizar</b> (ou reabra a pasta em Fonte de dados) para poder remapear as colunas.</p>`
+      : `<p>Carregue uma planilha primeiro.</p>`;
+  }
+  else {
+    body.innerHTML = [...S.cruas.values()].map((cru,idx) => {
+      const mapa = Object.assign({}, mapeia(cru.headers), S.overrides[cru.assinatura] || {});
+      return `<div class="maprow" data-sig="${esc(cru.assinatura)}">
+        <h4>${esc(cru.arquivo)} › ${esc(cru.aba)}</h4>
+        <p>Cabeçalho na linha ${cru.hr + 1} · ${cru.headers.length} colunas</p>
+        <div class="mapgrid">${CAMPO_IDS.map(id => `<div>
+          <label for="m${idx}-${id}">${CAMPOS[id].rotulo}${CAMPOS[id].obrig ? " *" : ""}</label>
+          <select id="m${idx}-${id}" data-campo="${id}">
+            <option value="">— não usar —</option>
+            ${cru.headers.map((h,i) => `<option value="${i}" ${mapa[id] === i ? "selected" : ""}>${esc(h)}</option>`).join("")}
+          </select></div>`).join("")}</div></div>`;
+    }).join("");
+  }
+  $("#map-overlay").classList.add("open");
+}
+function salvaMapa(){
+  $$("#map-body .maprow").forEach(row => {
+    const sig = row.dataset.sig, over = {};
+    row.querySelectorAll("select").forEach(sel => { if (sel.value !== "") over[sel.dataset.campo] = +sel.value; });
+    S.overrides[sig] = over;
+  });
+  salvaOverrides();
+  reconstroi(); tudo(); salvaCache();
+  $("#map-overlay").classList.remove("open");
+  toast(`Colunas aplicadas · ${S.recs.length} pagamentos.`);
+}
+
+/* ---------------- Exportação CSV ---------------- */
+function exporta(qual){
+  const dados = ultimaTabela[qual];
+  if (!dados || dados.length < 2){ toast("Nada para exportar."); return; }
+  const cel = v => typeof v === "number" ? String(v).replace(".",",") : `"${String(v ?? "").replace(/"/g,'""')}"`;
+  const csv = "\uFEFF" + dados.map(l => l.map(cel).join(";")).join("\r\n");
+  const url = URL.createObjectURL(new Blob([csv], { type:"text/csv;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `pagamentos-${qual}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+/* ---------------- Tema ---------------- */
+const LS_TEMA = "pagamentos.tema.v1";
+function aplicaTema(t){
+  document.documentElement.setAttribute("data-tema", t);
+  const ico = document.getElementById("tema-ico");
+  if (ico) ico.setAttribute("href", t === "escuro" ? "#i-sol" : "#i-lua");
+  const btn = $("#btn-tema");
+  if (btn) btn.title = t === "escuro" ? "Voltar ao tema claro" : "Usar tema escuro";
+  LS.set(LS_TEMA, t);
+}
+function iniciaTema(){
+  let t = null;
+  t = LS.get(LS_TEMA);
+  if (!t){
+    let escuro = false;
+    try{ escuro = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches; }catch(e){}
+    t = escuro ? "escuro" : "misto";
+  }
+  aplicaTema(t);
+}
+
+/* ---------------- Eventos ---------------- */
+function liga(){
+  $$(".tab").forEach(b => b.addEventListener("click", () => irPara(b.dataset.view)));
+
+  $("#f-ano").addEventListener("change", e => { S.filtros.ano = e.target.value; renderFiltros(); render(); salvaFiltros(); });
+  $("#f-mes").addEventListener("change", e => { S.filtros.mes = e.target.value; renderFiltros(); render(); salvaFiltros(); });
+  $("#f-semana").addEventListener("change", e => { S.filtros.semana = e.target.value; render(); salvaFiltros(); });
+  $("#f-busca").addEventListener("input", e => { S.filtros.busca = e.target.value; render(); });
+  $("#f-grupo").addEventListener("change", e => {
+    S.filtros.grupo = e.target.value; S.abertos.clear();
+    $("#f-busca").placeholder = "Filtrar " + rotuloGrupo().toLowerCase();
+  $("#btn-limpar").hidden = !filtrosAtivos(); render(); salvaFiltros();
+  });
+  $("#f-limite").addEventListener("input", e => {
+    const v = parseFloat(e.target.value);
+    S.filtros.limite = isFinite(v) && v >= 0 ? v : 0;      // campo vazio = sem limite
+    render(); salvaFiltros();
+  });
+  $("#f-limite").addEventListener("blur", e => {
+    if (e.target.value === ""){ e.target.value = S.filtros.limite = 10000; render(); salvaFiltros(); }
+  });
+
+  const dd = (btn, menu, conjunto, contador, itensFn) => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+      const abrir = !menu.classList.contains("open");
+      $$(".menu").forEach(m => m.classList.remove("open"));
+      menu.classList.toggle("open", abrir); btn.setAttribute("aria-expanded", abrir);
+    });
+    menu.addEventListener("click", e => {
+      e.stopPropagation();
+      if (e.target.dataset.all){ itensFn().forEach(i => conjunto.add(i)); }
+      else if (e.target.dataset.none){ conjunto.clear(); }
+      else if (e.target.matches("input[type=checkbox]")){
+        e.target.checked ? conjunto.add(e.target.value) : conjunto.delete(e.target.value);
+      } else return;
+      if (conjunto.size === itensFn().length) conjunto.clear();  // todos = sem filtro
+      menuMulti(menu, contador, itensFn(), conjunto);
+      render(); salvaFiltros();
+    });
+  };
+  dd($("#dep-btn"), $("#dep-menu"), S.filtros.deps, $("#dep-count"), () => opcoes().deps);
+  dd($("#banco-btn"), $("#banco-menu"), S.filtros.bancos, $("#banco-count"), () => opcoes().bancos);
+  dd($("#nat-btn"), $("#nat-menu"), S.filtros.naturezas, $("#nat-count"), () => opcoes().naturezas);
+  document.addEventListener("click", () => $$(".menu").forEach(m => m.classList.remove("open")));
+
+  $("#freq-pills").addEventListener("click", e => {
+    const b = e.target.closest(".pill"); if (!b) return;
+    S.filtros.freq = b.dataset.freq; render(); salvaFiltros();
+  });
+  $("#status-pills").addEventListener("click", e => {
+    const b = e.target.closest(".pill"); if (!b) return;
+    S.filtros.st = b.dataset.st; S.pag = 1; render(); salvaFiltros();
+  });
+  $("#f-conf").addEventListener("change", e => {
+    S.filtros.conf = e.target.value; S.pag = 1;
+    render(); salvaFiltros();
+  });
+  $("#status-tabela").addEventListener("change", e => {
+    const emp = e.target.closest("select[data-rev-emp]");
+    if (emp){
+      const alvo = porEmpresa(filtra()).find(x => x.empresa === emp.dataset.revEmp);
+      if (alvo){
+        defineRevisaoEmpresa(alvo, emp.value);
+        const n = semanasDaEmpresa(alvo).length;
+        if (n > 1) toast(`Conferência aplicada às ${n} semanas de ${alvo.empresa} neste recorte.`);
+      }
+      renderStatus();
+      return;
+    }
+    const el = e.target.closest("select[data-rev]"); if (!el) return;
+    defineRevisao(el.dataset.rev, el.value);
+    renderStatus();
+  });
+  $("#status-visao").addEventListener("click", e => {
+    const b = e.target.closest(".pill"); if (!b) return;
+    S.statusVisao = b.dataset.visao; S.pag = 1; render(); salvaFiltros();
+  });
+  $("#pag-ant").addEventListener("click", () => { S.pag = Math.max(1, S.pag - 1); renderStatus(); });
+  $("#pag-prox").addEventListener("click", () => { S.pag++; renderStatus(); });
+  $("#status-tabela").addEventListener("click", e => {
+    const b = e.target.closest(".acao"); if (!b) return;
+    S.filtros.busca = b.dataset.emp; S.filtros.freq = "todos";
+    S.abertos.clear(); S.abertos.add(b.dataset.emp);
+    $("#f-busca").value = b.dataset.emp;
+    irPara("frequencia");
+    toast("Filtrando por " + b.dataset.emp + ". Use “Limpar filtros” para ver todos.");
+  });
+  $("#freq-tabela").addEventListener("click", e => {
+    const tr = e.target.closest("tr.group"); if (!tr) return;
+    const emp = tr.dataset.emp;
+    S.abertos.has(emp) ? S.abertos.delete(emp) : S.abertos.add(emp);
+    renderFrequencia();
+  });
+  $("#freq-tabela").addEventListener("keydown", e => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const tr = e.target.closest("tr.group"); if (!tr) return;
+    e.preventDefault(); tr.click();
+  });
+  $$("[data-csv]").forEach(b => b.addEventListener("click", () => exporta(b.dataset.csv)));
+
+  $("#btn-limpar").addEventListener("click", limpaFiltros);
+  $("#btn-tema").addEventListener("click", () =>
+    aplicaTema(document.documentElement.getAttribute("data-tema") === "escuro" ? "misto" : "escuro"));
+  $("#btn-refresh").addEventListener("click", atualizar);
+  $("#btn-dir").addEventListener("click", escolhePasta);
+  $("#btn-files").addEventListener("click", () => $("#in-files").click());
+  $("#in-files").addEventListener("change", e => carregaArquivos(e.target.files));
+  $("#in-folder").addEventListener("change", e => carregaArquivos(e.target.files));
+
+  const drop = $("#drop");
+  ["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => { if (e.dataTransfer.files.length) carregaArquivos(e.dataTransfer.files); });
+
+  $("#btn-map").addEventListener("click", abreMapa);
+  $("#f-usuario").addEventListener("change", e => {
+    S.usuario = e.target.value.trim();
+    LS.set(LS_USER, S.usuario);
+    if (S.usuario) toast("As próximas conferências serão registradas em nome de " + S.usuario + ".");
+  });
+  $("#btn-salvar-rev").addEventListener("click", exportaRevisoes);
+  $("#in-rev").addEventListener("change", e => { if (e.target.files[0]) importaRevisoes(e.target.files[0]); e.target.value = ""; });
+  window.addEventListener("pagehide", flushRevisoes);
+  window.addEventListener("beforeunload", flushRevisoes);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) flushRevisoes(); });
+  $("#btn-limpar-rev").addEventListener("click", () => {
+    if (confirm(`Apagar as ${totalRevisoes()} conferências marcadas?`)) limpaRevisoes();
+  });
+  $("#btn-esquecer").addEventListener("click", () => {
+    if (confirm("Apagar os dados guardados neste computador e o caminho da pasta?")) esqueceCache();
+  });
+  $("#map-save").addEventListener("click", salvaMapa);
+  [$("#map-close"), $("#map-cancel")].forEach(b => b.addEventListener("click", () => $("#map-overlay").classList.remove("open")));
+  $("#map-overlay").addEventListener("click", e => { if (e.target.id === "map-overlay") $("#map-overlay").classList.remove("open"); });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape"){ $("#map-overlay").classList.remove("open"); $$(".menu").forEach(m => m.classList.remove("open")); }
+  });
+  window.addEventListener("focus", verificaMudancas);
+  setInterval(verificaMudancas, 60000);
+}
+
+/* ---------------- Dados gerados pelo script Python (dados.js) ---------------- */
+function carregaEmbutido(){
+  const d = window.DADOS_PAGAMENTOS;
+  if (!Array.isArray(d) || !d.length) return false;
+  S.recs = d.map(o => {
+    const data = paraData(o.data);
+    if (!data) return null;
+    return { data, empresa:String(o.empresa || "").trim(), valor:paraNumero(o.valor) || 0,
+      banco:String(o.banco || "Não informado").trim() || "Não informado",
+      depto:String(o.departamento || "Não informado").trim() || "Não informado",
+      favorecido:String(o.favorecido || "").trim(),
+      natureza:String(o.natureza || "Não informada").trim() || "Não informada",
+      desc:String(o.descricao || ""), ano:data.getFullYear(), mes:data.getMonth(),
+      semana:semanaDoMes(data), dia:diaUtil(data), origem:o.origem || "dados.js", aba:"" };
+  }).filter(r => r && r.empresa);
+  S.recs.sort((a,b) => a.data - b.data || a.empresa.localeCompare(b.empresa,"pt-BR"));
+  aplicaChaves(S.recs);
+  S.ultimaLeitura = window.DADOS_ATUALIZADO ? new Date(window.DADOS_ATUALIZADO) : new Date();
+  S.origemTipo = "embutido"; S.origemNome = "dados.js";
+  S.rotulos = { empresa:"Beneficiário", favorecido:S.recs.some(r => r.favorecido) ? "Favorecido" : "" };
+  S.arquivos = [{ nome:"dados.js", caminho:"dados.js (consolidado pelo Python)",
+    abas:[{ nome:"consolidado", ok:true, registros:S.recs.length }], mtime:S.ultimaLeitura }];
+  return true;
+}
+
+/* ---------------- Início ---------------- */
+(function init(){
+  carregaPrefs();
+  iniciaTema();
+  liga();
+  $("#f-limite").value = S.filtros.limite;
+  $("#f-busca").value = "";
+  S.usuario = LS.get(LS_USER) || "";
+  const viewSalva = S.view;
+  const temEmbutido = carregaEmbutido();
+  irPara(temEmbutido ? viewSalva : "fonte");
+  tudo();
+  if (temEmbutido){ carregaRevisoes().then(() => render()); return; }
+
+  (async () => {
+    await carregaRevisoes();
+    atualizaEstadoRev();
+    const restaurou = await restauraCache();
+    if (restaurou){
+      irPara(viewSalva === "fonte" ? "valores" : viewSalva);
+      tudo();
+      const d = S.ultimaLeitura;
+      const quando = d.toDateString() === new Date().toDateString()
+        ? "hoje às " + d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})
+        : d.toLocaleDateString("pt-BR") + " às " + d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+      toast(`${S.recs.length.toLocaleString("pt-BR")} pagamentos da leitura de ${quando}. Atualizar relê a planilha.`);
+    }
+    await reconectaPasta();          // se a pasta ainda estiver liberada, relê sozinho
+  })();
+})();
+
+</script>
+</body>
+</html>

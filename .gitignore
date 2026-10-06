@@ -1,0 +1,21 @@
+# Dados reais (nunca versionar)
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+!dados_exemplo/*.xlsx
+bd/
+dados.js
+pagamentos_consolidado.xlsx
+
+# Segredos / ambiente
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+
+# Sistema
+Thumbs.db
+.DS_Store
